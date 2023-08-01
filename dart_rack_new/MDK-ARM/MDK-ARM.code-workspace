@@ -1,0 +1,24 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "cortex-debug.variableUseNaturalFormat": true,
+        "files.associations": {
+            "interrupt_service.h": "c",
+            "ff.h": "c",
+            "ffconf.h": "c",
+            "fatfs.h": "c"
+        },
+        "docwriter.progress.trackFunctions": true,
+        "docwriter.progress.trackMethods": true,
+        "docwriter.style": "Auto-detect",
+        "docwriter.progress.trackTypes": true,
+        "docwriter.progress.trackClasses": true,
+        "docwriter.hotkey.windows": "Alt + .",
+        "docwriter.language": "Chinese"
+    },
+    "extensions": {}
+}
