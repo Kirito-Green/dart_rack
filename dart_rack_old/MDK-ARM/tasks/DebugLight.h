@@ -1,0 +1,31 @@
+#ifndef DEBUG_LIGHT_H
+#define DEBUG_LIGHT_H
+
+/* LEDµÆ */
+#define LED_SHOOT1_SET                  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_1,GPIO_PIN_RESET)
+#define LED_SHOOT2_SET                  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_RESET)
+#define LED_SHOOT3_SET                  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_3,GPIO_PIN_RESET)
+#define LED_SHOOT4_SET                  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_4,GPIO_PIN_RESET)
+#define LED_YAW_SET                     HAL_GPIO_WritePin(GPIOG,GPIO_PIN_5,GPIO_PIN_RESET) 
+#define LED_PITCH_SET                   HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_RESET)
+#define LED_CHAIN_SET                   HAL_GPIO_WritePin(GPIOG,GPIO_PIN_7,GPIO_PIN_RESET)
+#define LED_YAW_ANGLE_ENCODER_SET       HAL_GPIO_WritePin(GPIOG,GPIO_PIN_8,GPIO_PIN_RESET)
+#define LED_PITCH_ANGLE_ENCODER_SET     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_14,GPIO_PIN_RESET)
+#define LED_PROBLEM_SET                 HAL_GPIO_WritePin(GPIOE,GPIO_PIN_11,GPIO_PIN_RESET)
+#define LED_SHOOT1_RESET                HAL_GPIO_WritePin(GPIOG,GPIO_PIN_1,GPIO_PIN_SET)
+#define LED_SHOOT2_RESET                HAL_GPIO_WritePin(GPIOG,GPIO_PIN_2,GPIO_PIN_SET)
+#define LED_SHOOT3_RESET                HAL_GPIO_WritePin(GPIOG,GPIO_PIN_3,GPIO_PIN_SET)
+#define LED_SHOOT4_RESET                HAL_GPIO_WritePin(GPIOG,GPIO_PIN_4,GPIO_PIN_SET)
+#define LED_YAW_RESET                   HAL_GPIO_WritePin(GPIOG,GPIO_PIN_5,GPIO_PIN_SET) 
+#define LED_PITCH_RESET                 HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_SET)
+#define LED_CHAIN_RESET                 HAL_GPIO_WritePin(GPIOG,GPIO_PIN_7,GPIO_PIN_SET)
+#define LED_YAW_ANGLE_ENCODER_RESET     HAL_GPIO_WritePin(GPIOG,GPIO_PIN_8,GPIO_PIN_SET)
+#define LED_PITCH_ANGLE_ENCODER_RESET   HAL_GPIO_WritePin(GPIOF,GPIO_PIN_14,GPIO_PIN_SET)
+#define LED_PROBLEM_RESET               HAL_GPIO_WritePin(GPIOE,GPIO_PIN_11,GPIO_PIN_SET)
+
+
+
+extern void DebugLightThread(void const* argument);
+extern void DebugLightShow(void);
+
+#endif
