@@ -180,6 +180,9 @@
             "path": "device/hx711.c"
           },
           {
+            "path": "device/lazer.c"
+          },
+          {
             "path": "device/motor.c"
           },
           {

@@ -63,7 +63,7 @@ void usart6_rx_dma_init(uint8_t *rx6_buf, uint16_t dma_buf_num)
 /**
  * @brief fputc 函数使用 HAL_UART_Transmit 函数通过 UART 传输字符。
  *
- * @param ch 参数“ch”是要写入文件的字符。它是“int”类型，因为它可以表示字符和文件结束标记（EOF）。
+ * @param ch 参数“ch”是要写入文件的字符。它是“int”类型，因为它可以表示字符和文件结束标记(EOF)。
  * @param f 参数“f”是指向 FILE 结构的指针。该结构表示文件流并包含有关正在访问的文件的信息，例如其位置和缓冲状态。
  * 在本例中，它用于指定将用于传输数据的 UART 外设 (huart8)。
  *

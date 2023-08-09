@@ -14,7 +14,7 @@ static fp32 force_left;
 static fp32 force_right;
 static DartRackTarget_t target;
 static DartRackEncoder_t encoder;
-static ShootMotorMeasure_t shoot_motor_measure;
+static DartRackMotorMeasure_t motor_measure;
 static DartRackTarget_t target;
 static uint8_t rx_buf[20];
 static uint8_t rx_len;
@@ -23,9 +23,9 @@ static DartRackStateMachine_e state;
 void oled_show_data(void);
 
 /**
- * @brief å‡½æ•°â€œoled_reflesh_threadâ€ä½¿ç”¨æ¥è‡ªå„ç§ä¼ æ„Ÿå™¨å’Œç”µæœºçš„æ•°æ®ä¸æ–­æ›´æ–° OLED æ˜¾ç¤ºå±ã€‚
+ * @brief º¯Êı¡°oled_reflesh_thread¡±Ê¹ÓÃÀ´×Ô¸÷ÖÖ´«¸ĞÆ÷ºÍµç»úµÄÊı¾İ²»¶Ï¸üĞÂ OLED ÏÔÊ¾ÆÁ¡£
  *
- * @param argument â€œargumentâ€å‚æ•°æ˜¯æŒ‡å‘æ‚¨å¯èƒ½æƒ³è¦ä¼ é€’ç»™çº¿ç¨‹çš„ä»»ä½•é™„åŠ æ•°æ®çš„æŒ‡é’ˆã€‚åœ¨è¿™ç§æƒ…å†µä¸‹ï¼Œå®ƒæ²¡æœ‰è¢«ä½¿ç”¨ï¼Œæ‰€ä»¥ä½ å¯ä»¥å¿½ç•¥å®ƒã€‚
+ * @param argument ¡°argument¡±²ÎÊıÊÇÖ¸ÏòÄú¿ÉÄÜÏëÒª´«µİ¸øÏß³ÌµÄÈÎºÎ¸½¼ÓÊı¾İµÄÖ¸Õë¡£ÔÚÕâÖÖÇé¿öÏÂ£¬ËüÃ»ÓĞ±»Ê¹ÓÃ£¬ËùÒÔÄã¿ÉÒÔºöÂÔËü¡£
  */
 void oled_reflesh_thread(void const *argument)
 {
@@ -40,7 +40,8 @@ void oled_reflesh_thread(void const *argument)
         get_hx711_data(&force_left, &force_right);
         get_target(&target);
         get_encoder_angle(&encoder);
-        shoot_motor_measure_update(&shoot_motor_measure);
+        gimbal_motor_measure_update(&motor_measure.gimbal_motor_measure);
+        shoot_motor_measure_update(&motor_measure.shoot_motor_measure);
         oled_show_data();
         // break;
         // }
@@ -50,10 +51,10 @@ void oled_reflesh_thread(void const *argument)
 }
 
 /**
- * @brief å‡½æ•°â€œoled_show_fp32â€åœ¨ OLED æ˜¾ç¤ºå±ä¸Šæ˜¾ç¤ºæµ®ç‚¹æ•°ï¼Œå°æ•°ç‚¹åæŒ‡å®šä½æ•°ã€‚
+ * @brief º¯Êı¡°oled_show_fp32¡±ÔÚ OLED ÏÔÊ¾ÆÁÉÏÏÔÊ¾¸¡µãÊı£¬Ğ¡ÊıµãºóÖ¸¶¨Î»Êı¡£
  *
- * @param val â€œvalâ€å‚æ•°æ˜¯ä¸€ä¸ªæµ®ç‚¹æ•°ï¼ˆfp32ï¼‰ï¼Œä»£è¡¨è¦åœ¨OLEDå±å¹•ä¸Šæ˜¾ç¤ºçš„å€¼ã€‚
- * @param digit â€œdigitâ€å‚æ•°æ˜¯ä¸€ä¸ªæ•´æ•°ï¼ŒæŒ‡å®šè¦æ˜¾ç¤ºçš„æµ®ç‚¹å€¼å°æ•°ç‚¹åçš„ä½æ•°ã€‚
+ * @param val ¡°val¡±²ÎÊıÊÇÒ»¸ö¸¡µãÊı(fp32)£¬´ú±íÒªÔÚOLEDÆÁÄ»ÉÏÏÔÊ¾µÄÖµ¡£
+ * @param digit ¡°digit¡±²ÎÊıÊÇÒ»¸öÕûÊı£¬Ö¸¶¨ÒªÏÔÊ¾µÄ¸¡µãÖµĞ¡ÊıµãºóµÄÎ»Êı¡£
  */
 void oled_show_fp32(fp32 val, uint8_t digit)
 {
@@ -65,7 +66,7 @@ void oled_show_fp32(fp32 val, uint8_t digit)
 }
 
 /**
- * @brief å‡½æ•°â€œoled_show_dataâ€åœ¨OLEDå±å¹•ä¸Šæ˜¾ç¤ºå„ç§æ•°æ®å€¼ã€‚
+ * @brief º¯Êı¡°oled_show_data¡±ÔÚOLEDÆÁÄ»ÉÏÏÔÊ¾¸÷ÖÖÊı¾İÖµ¡£
  */
 void oled_show_data(void)
 {
@@ -79,7 +80,8 @@ void oled_show_data(void)
 
     oled_enter_string((uint8_t *)"P ", sizeof("P "));
     oled_show_fp32(target.pitch, OLED_SHOW_FP32_DIGIT);
-    oled_show_fp32(encoder.pitch_angle_encoder.angle, OLED_SHOW_ENCODER_DIGIT);
+    // oled_show_fp32(encoder.pitch_angle_encoder.angle, OLED_SHOW_ENCODER_DIGIT);
+    oled_show_fp32(motor_measure.gimbal_motor_measure.pitch_dist, OLED_SHOW_FP32_DIGIT);
     oled_new_line();
 
     oled_enter_string((uint8_t *)"FL ", sizeof("FL "));
@@ -93,25 +95,25 @@ void oled_show_data(void)
     oled_enter_string((uint8_t *)"DL ", sizeof("DL "));
     oled_show_fp32(target.drag_left, OLED_SHOW_FP32_DIGIT);
     oled_enter_string((uint8_t *)" ", sizeof(" "));
-    oled_show_fp32(shoot_motor_measure.drag_left_dist, OLED_SHOW_FP32_DIGIT);
+    oled_show_fp32(motor_measure.shoot_motor_measure.drag_left_dist, OLED_SHOW_FP32_DIGIT);
     oled_new_line();
 
     oled_enter_string((uint8_t *)"DR ", sizeof("DR "));
     oled_show_fp32(target.drag_right, OLED_SHOW_FP32_DIGIT);
     oled_enter_string((uint8_t *)" ", sizeof(" "));
-    oled_show_fp32(shoot_motor_measure.drag_right_dist, OLED_SHOW_FP32_DIGIT);
+    oled_show_fp32(motor_measure.shoot_motor_measure.drag_right_dist, OLED_SHOW_FP32_DIGIT);
     oled_new_line();
 
     oled_enter_string((uint8_t *)"LD ", sizeof("LD "));
     oled_show_fp32(target.load, OLED_SHOW_FP32_DIGIT);
     oled_enter_string((uint8_t *)" ", sizeof(" "));
-    oled_show_fp32(shoot_motor_measure.load_dist, OLED_SHOW_FP32_DIGIT);
+    oled_show_fp32(motor_measure.shoot_motor_measure.load_dist, OLED_SHOW_FP32_DIGIT);
     oled_new_line();
 
     oled_enter_string((uint8_t *)"AD ", sizeof("AD "));
     oled_show_fp32(target.adjust, OLED_SHOW_FP32_DIGIT);
     oled_enter_string((uint8_t *)" ", sizeof(" "));
-    oled_show_fp32(shoot_motor_measure.adjust_dist, OLED_SHOW_FP32_DIGIT);
+    oled_show_fp32(motor_measure.shoot_motor_measure.adjust_dist, OLED_SHOW_FP32_DIGIT);
     oled_new_line();
 
     oled_refresh();

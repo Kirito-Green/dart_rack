@@ -10,7 +10,10 @@
             "interrupt_service.h": "c",
             "ff.h": "c",
             "ffconf.h": "c",
-            "fatfs.h": "c"
+            "fatfs.h": "c",
+            "__config": "c",
+            "__undef_macros": "c",
+            "limits": "c"
         },
         "docwriter.progress.trackFunctions": true,
         "docwriter.progress.trackMethods": true,

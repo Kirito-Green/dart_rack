@@ -88,7 +88,7 @@ typedef enum
   */ 
 #define  LCD_ORIENTATION_PORTRAIT   ((uint8_t)0x00) /*!< Portrait orientation choice of LCD screen  */
 #define  LCD_ORIENTATION_LANDSCAPE  ((uint8_t)0x01) /*!< Landscape orientation choice of LCD screen */
-#define  LCD_ORIENTATION_LANDSCAPE_ROT180 ((uint8_t)0x02) /*!< Landscape rotated 180° orientation choice of LCD screen */
+#define  LCD_ORIENTATION_LANDSCAPE_ROT180 ((uint8_t)0x02) /*!< Landscape rotated 180 orientation choice of LCD screen */
 
 /** 
   * @brief  LCD color  

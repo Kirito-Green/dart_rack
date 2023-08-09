@@ -72,7 +72,7 @@
 <ul>
 <li>Remove useless assert_param(IS_ETH_MAC_ADDRESS0123(MacAddr)) from static function ETH_MACAddressConfig().</li>
 <li>Replace hard coded Rx buffer size (1000U) by macro ETH_RX_BUF_SIZE.</li>
-<li>Correct bit positions when getting MAC and DMA configurations and replace ‘UnicastSlowProtocolPacketDetect’ by ‘UnicastPausePacketDetect’ in the MAC default configuration structure.</li>
+<li>Correct bit positions when getting MAC and DMA configurations and replace ‘UnicastSlowProtocolPacketDetect� by ‘UnicastPausePacketDetect� in the MAC default configuration structure.</li>
 <li>Ensure a delay of 4 TX_CLK/RX_CLK cycles between two successive write operations to the same register.</li>
 <li>Disable DMA transmission in both HAL_ETH_Stop_IT() and HAL_ETH_Stop() APIs.</li>
 </ul></li>
@@ -262,7 +262,7 @@
 <li>Use bits definitions from CMSIS Device header file instead of hard-coded values.</li>
 <li>Wrap comments to be 80-character long and correct typos.</li>
 <li>Move constants RTC_IT_TAMP. from hal_rtc.h to hal_rtc_ex.h.</li>
-<li>Gather all instructions related to exiting the “init” mode into new function RTC_ExitInitMode().</li>
+<li>Gather all instructions related to exiting the “init� mode into new function RTC_ExitInitMode().</li>
 <li>Add new macro assert_param(IS_RTC_TAMPER_FILTER_CONFIG_CORRECT(sTamper-&gt;Filter, sTamper-&gt;Trigger)) to check tamper filtering is disabled in case tamper events are triggered on signal edges.</li>
 <li>Rework functions HAL_RTCEx_SetTamper() and HAL_RTCEx_SetTamper_IT() to:
 <ul>
@@ -673,7 +673,7 @@
 <li>Issue on audio recorder module with MDK-ARM, to be fixed for next releases.</li>
 </ul></li>
 <li>SW4STM32 projects are not provided for all EVAL demonstrations.</li>
-<li>Only template projects migrated to Arm Compiler 6 with MDK-ARM 5.31 (“AC-like Warnings” mode).</li>
+<li>Only template projects migrated to Arm Compiler 6 with MDK-ARM 5.31 (“AC-like Warnings� mode).</li>
 </ul>
 <h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
 <ul>
@@ -722,7 +722,7 @@
 <li><strong>CMSIS</strong> updates
 <ul>
 <li>Add missing definition FLASH_CR_ERRIE to the CMSIS header file.</li>
-<li>Remove unsupported “GPIOF_BASE” and “GPIOG_BASE” defines from STM32F412Vx device.</li>
+<li>Remove unsupported “GPIOF_BASE� and “GPIOG_BASE� defines from STM32F412Vx device.</li>
 <li>Add new atomic register access macros in stm32f4xx.h file.</li>
 <li>Add LSI maximum startup time datasheet value: LSI_STARTUP_TIME.</li>
 <li>Fix typo in CMSIS STM32F4xx version macro (__STM32F4xx_CMSIS_VERSION).</li>
@@ -753,7 +753,7 @@
 </ul></li>
 <li><strong>HAL/LL RTC_BKP</strong> update
 <ul>
-<li>Update __HAL_RTC_…(__HANDLE__, …) macros to access registers through (__HANDLE__)-&gt;Instance pointer and avoid “unused variable” warnings.</li>
+<li>Update __HAL_RTC_�(__HANDLE__, �) macros to access registers through (__HANDLE__)-&gt;Instance pointer and avoid “unused variable� warnings.</li>
 <li>Correct month management in IS_LL_RTC_MONTH() macro.</li>
 </ul></li>
 <li><strong>HAL RNG</strong> update
@@ -788,7 +788,7 @@
 </ul></li>
 <li><strong>HAL SMBUS</strong> update
 <ul>
-<li>Updated HAL_SMBUS_ER_IRQHandler() API to return the correct error code “SMBUS_FLAG_PECERR” in case of packet error occurs.</li>
+<li>Updated HAL_SMBUS_ER_IRQHandler() API to return the correct error code “SMBUS_FLAG_PECERR� in case of packet error occurs.</li>
 </ul></li>
 <li><strong>HAL/LL SPI</strong> update
 <ul>
@@ -903,7 +903,7 @@
 <li>Upgrade <strong>USB Device</strong> Lib to use <strong>V2.7.1</strong>.</li>
 <li>Upgrade <strong>MbedTLS</strong> to use <strong>V2.16.2</strong></li>
 <li>Upgrade <strong>PDM</strong> Lib to use <strong>V3.3.0</strong></li>
-<li>Remove “register” keyword to be compliant with new C++ rules:
+<li>Remove “register� keyword to be compliant with new C++ rules:
 <ul>
 <li>The register storage class specifier was deprecated in C++11 and removed in C++17.</li>
 </ul></li>
@@ -1056,7 +1056,7 @@
 <li><strong>LL SDMMC</strong> update
 <ul>
 <li>Update the definition of SDMMC_DATATIMEOUT constant in order to allow the user to redefine it in his proper application.</li>
-<li>Remove ‘register’ storage class specifier from LL SDMMC driver.</li>
+<li>Remove ‘register� storage class specifier from LL SDMMC driver.</li>
 <li>Deploy new functions MMC_ReadExtCSD() and SDMMC_CmdSendEXTCSD () that read and check the sectors number of the device in order to resolve the issue of wrongly reading big memory size.</li>
 </ul></li>
 <li><strong>HAL SMBUS</strong> update
@@ -1084,7 +1084,7 @@
 </ul></li>
 <li><strong>HAL SPDIFRX</strong> update
 <ul>
-<li>Remove ‘register’ storage class specifier from HAL SPDIFRX driver.</li>
+<li>Remove ‘register� storage class specifier from HAL SPDIFRX driver.</li>
 </ul></li>
 <li><strong>HAL I2S</strong> update
 <ul>
@@ -1169,7 +1169,7 @@
 <ul>
 <li>Update license for all projects file sources.</li>
 <li>Add UART example showing use of HAL UART enhanced reception services (ReceptionToIdle) API for STM32446E-Nucleo and STM32F429ZI-Nucleo boards.</li>
-<li>Template projects migrated to Arm Compiler 6 with MDK-ARM 5.29 (“AC5-like Warnings” mode)</li>
+<li>Template projects migrated to Arm Compiler 6 with MDK-ARM 5.29 (“AC5-like Warnings� mode)</li>
 <li>Update all FreeRTOS_MPU applications to support <strong>FreeRTOS v10.3.1</strong>.</li>
 <li>STM32F411E-Discovery:
 <ul>
@@ -1536,7 +1536,7 @@
 <li>Issue on audio recorder module with MDK-ARM, to be fixed for next releases.</li>
 </ul></li>
 <li>SW4STM32 projects are not provided for all EVAL demonstrations.</li>
-<li>Only template projects migrated to Arm Compiler 6 with MDK-ARM 5.31 (“AC-like Warnings” mode).</li>
+<li>Only template projects migrated to Arm Compiler 6 with MDK-ARM 5.31 (“AC-like Warnings� mode).</li>
 </ul>
 <h2 id="development-toolchains-and-compilers-1">Development Toolchains and Compilers</h2>
 <ul>
@@ -1588,7 +1588,7 @@
 <ul>
 <li>Update to fix hardfault issue with HAL_I2C_Mem_Write_DMA() API:
 <ul>
-<li>Abort the right ongoing DMA transfer when memory write access request operation failed: fix typo “hdmarx” replaced by “hdmatx”</li>
+<li>Abort the right ongoing DMA transfer when memory write access request operation failed: fix typo “hdmarx� replaced by “hdmatx�</li>
 </ul></li>
 </ul></li>
 </ul></li>
@@ -1691,8 +1691,8 @@
 <ul>
 <li>Update HAL CRYP driver to support block by block decryption without initializing the IV and KEY at each call.
 <ul>
-<li>Add new CRYP Handler parameters: “KeyIVConfig” and “SizesSum”</li>
-<li>Add new CRYP init parameter: “KeyIVConfigSkip”</li>
+<li>Add new CRYP Handler parameters: “KeyIVConfig� and “SizesSum�</li>
+<li>Add new CRYP init parameter: “KeyIVConfigSkip�</li>
 </ul></li>
 </ul></li>
 <li><strong>HAL I2S</strong> update
@@ -2295,7 +2295,7 @@
 <ul>
 <li>Replace HAL_GetUID() API by HAL_GetUIDw0(), HAL_GetUIDw1() and HAL_GetUIDw2()</li>
 <li>HAL_IS_BIT_SET()/HAL_IS_BIT_CLR() macros implementation update</li>
-<li>“stdio.h” include updated with “stddef.h”</li>
+<li>“stdio.h� include updated with “stddef.h�</li>
 </ul></li>
 </ul></li>
 </ul></li>
@@ -10805,7 +10805,7 @@
 <li>IAR Embedded Workbench for ARM (EWARM) toolchain V6.70.3</li>
 <li>RealView Microcontroller Development Kit (MDK-ARM) toolchain v4.73
 <ul>
-<li>A software patch is needed to use STM32F401xE devices with MDK-ARM v4.73. If you do not have this patch installed, you can install it from the following folder “-ARM_STM32F401xE_Patch”</li>
+<li>A software patch is needed to use STM32F401xE devices with MDK-ARM v4.73. If you do not have this patch installed, you can install it from the following folder �-ARM_STM32F401xE_Patch�</li>
 </ul></li>
 <li>Atollic TrueSTUDIO STM32 (TrueSTUDIO) toolchain v4.3.0</li>
 </ul>

@@ -93,9 +93,9 @@ extern void slove_data_error(void);
 extern void sbus_to_rc(void);
 
 // ļֵ
-extern bool_t cheak_key_press(uint16_t key);
+extern bool_t check_key_press(uint16_t key);
 // ش
-extern bool_t cheak_key_press_once(uint16_t key);
+extern bool_t check_key_press_once(uint16_t key);
 
 // һҡֵ
 extern fp32 remote_channel_rightX(void);

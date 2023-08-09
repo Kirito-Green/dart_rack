@@ -97,13 +97,6 @@ typedef enum {
     DART_RACK_SHOOT_LAUNCH,
 } DartRackShootState_e;
 
-//* 装填电机状态机
-typedef enum {
-    MOTOR_LOAD_READY = 0x00,
-    MOTOR_LOAD_BUSY,
-    MOTOR_LOAD_TIMEOUT,
-} MotorLoadState_e;
-
 //* 装填舵机状态机
 typedef enum {
     SERVO_LOAD_READY = 0X00,
@@ -111,6 +104,29 @@ typedef enum {
     SERVO_LOAD_UP,
     SERVO_LOAD_WAIT,
 } ServoLoadState_e;
+
+// * 发射舵机状态机
+typedef enum {
+    SERVO_LAUNCH_READY = 0x00,
+    SERVO_LAUNCH_DOWN,
+    SERVO_LAUNCH_UP,
+} ServoLaunchState_e;
+
+typedef enum {
+    SERVO_BLOCK_READY = 0x00,
+    SERVO_BLOCK_DOWN,
+    SERVO_BLOCK_MID,
+    SERVO_BLOCK_UP,
+    SERVO_BLOCK_WAIT,
+} ServoBlockState_e;
+
+//* 装填电机状态机
+typedef enum {
+    MOTOR_LOAD_READY = 0x00,
+    MOTOR_LOAD_BUSY,
+    MOTOR_LOAD_RETURN,
+    MOTOR_LOAD_TIMEOUT,
+} MotorLoadState_e;
 
 //* 调节电机状态机
 typedef enum {
@@ -133,20 +149,13 @@ typedef enum {
     MOTOR_DRAG_TIMEOUT,
 } MotorDragState_e;
 
-// * 发射舵机状态机
-typedef enum {
-    SERVO_LAUNCH_READY = 0x00,
-    SERVO_LAUNCH_DOWN,
-    SERVO_LAUNCH_BUSY,
-    SERVO_LAUNCH_UP,
-} ServoLaunchState_e;
-
 extern void launch_thread(void const *argument);
 extern void servo_init(void);
 extern void gimbal_command_update(void);
 extern void shoot_command_update(void);
 extern void get_encoder_angle(DartRackEncoder_t *encoder);
 extern void get_target(DartRackTarget_t *target);
+extern void motor_reset_target(void);
 extern void get_state(DartRackStateMachine_e *state);
 
 #endif

@@ -2170,8 +2170,8 @@ Section Cross References
     remote.o(.text.sbus_to_rc) refers to remote.o(.bss.sbus_rx_buf) for sbus_rx_buf
     remote.o(.text.sbus_to_rc) refers to remote.o(.bss.key_jump_channel) for key_jump_channel
     remote.o(.ARM.exidx.text.sbus_to_rc) refers to remote.o(.text.sbus_to_rc) for [Anonymous Symbol]
-    remote.o(.text.cheak_key_Press) refers to remote.o(.bss.rc_ctrl) for rc_ctrl
-    remote.o(.ARM.exidx.text.cheak_key_Press) refers to remote.o(.text.cheak_key_Press) for [Anonymous Symbol]
+    remote.o(.text.check_key_press) refers to remote.o(.bss.rc_ctrl) for rc_ctrl
+    remote.o(.ARM.exidx.text.check_key_press) refers to remote.o(.text.check_key_press) for [Anonymous Symbol]
     remote.o(.text.cheak_key_press_once) refers to remote.o(.bss.rc_ctrl) for rc_ctrl
     remote.o(.text.cheak_key_press_once) refers to remote.o(.bss.key_jump_channel) for key_jump_channel
     remote.o(.text.cheak_key_press_once) refers to remote.o(.bss.key_used) for key_used
@@ -2363,7 +2363,7 @@ Section Cross References
     launch_thread.o(.text.dart_rack_state_update) refers to stm32f4xx_hal_tim.o(.text.HAL_TIM_PWM_Start) for HAL_TIM_PWM_Start
     launch_thread.o(.text.dart_rack_state_update) refers to tim.o(.bss.htim4) for htim4
     launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.DART_RACK_CLIENT_CMD) for DART_RACK_CLIENT_CMD
-    launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.YAW_CMD_TEMP) for YAW_CMD_TEMP
+    launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.temp_yaw_cmd) for temp_yaw_cmd
     launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.YAW_TOWER_ANGLE) for YAW_TOWER_ANGLE
     launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.YAW_TARGET_ANGLE) for YAW_TARGET_ANGLE
     launch_thread.o(.text.dart_rack_state_update) refers to launch_thread.o(.bss.DART_RACK_AIM_SHOOT) for DART_RACK_AIM_SHOOT
@@ -5618,8 +5618,8 @@ Removing Unused input sections from the image.
     Removing remote.o(.text.slove_data_error), (10 bytes).
     Removing remote.o(.ARM.exidx.text.slove_data_error), (8 bytes).
     Removing remote.o(.ARM.exidx.text.sbus_to_rc), (8 bytes).
-    Removing remote.o(.text.cheak_key_Press), (18 bytes).
-    Removing remote.o(.ARM.exidx.text.cheak_key_Press), (8 bytes).
+    Removing remote.o(.text.check_key_press), (18 bytes).
+    Removing remote.o(.ARM.exidx.text.check_key_press), (8 bytes).
     Removing remote.o(.text.cheak_key_press_once), (74 bytes).
     Removing remote.o(.ARM.exidx.text.cheak_key_press_once), (8 bytes).
     Removing remote.o(.text.remote_channel_rightX), (36 bytes).
@@ -8193,7 +8193,7 @@ Image Symbol Table
     DART_RACK_AIM_SHOOT                      0x20000038   Data           1  launch_thread.o(.bss.DART_RACK_AIM_SHOOT)
     DART_RACK_CLIENT_CMD                     0x20000039   Data           1  launch_thread.o(.bss.DART_RACK_CLIENT_CMD)
     SystemTimer                              0x20000450   Data           4  interrupt_service.o(.bss.SystemTimer)
-    YAW_CMD_TEMP                             0x20000454   Data           4  launch_thread.o(.bss.YAW_CMD_TEMP)
+    temp_yaw_cmd                             0x20000454   Data           4  launch_thread.o(.bss.temp_yaw_cmd)
     YAW_TARGET_ANGLE                         0x20000458   Data           4  launch_thread.o(.bss.YAW_TARGET_ANGLE)
     YAW_TOWER_ANGLE                          0x2000045c   Data           4  launch_thread.o(.bss.YAW_TOWER_ANGLE)
     cmd_id                                   0x2000047c   Data           2  referee.o(.bss.cmd_id)
@@ -8719,7 +8719,7 @@ Memory Map of the image
     0x20000040        -       0x00000010   Zero   RW         1985    .bss.MotorSendBuffer  motor.o
     0x20000050        -       0x00000400   Zero   RW         2145    .bss.OLED_GRAM      oled.o
     0x20000450        -       0x00000004   Zero   RW         2196    .bss.SystemTimer    interrupt_service.o
-    0x20000454        -       0x00000004   Zero   RW         2244    .bss.YAW_CMD_TEMP   launch_thread.o
+    0x20000454        -       0x00000004   Zero   RW         2244    .bss.temp_yaw_cmd   launch_thread.o
     0x20000458        -       0x00000004   Zero   RW         2246    .bss.YAW_TARGET_ANGLE  launch_thread.o
     0x2000045c        -       0x00000004   Zero   RW         2245    .bss.YAW_TOWER_ANGLE  launch_thread.o
     0x20000460        -       0x00000002   Zero   RW         1991    .bss.adjust_motor_measure.1  motor.o

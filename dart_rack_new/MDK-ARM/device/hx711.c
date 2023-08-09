@@ -8,7 +8,7 @@ static fp32 force_left  = 0.0f;
 static fp32 force_right = 0.0f;
 
 /**
- * @brief å‡½æ•° hx711_read ä»Žä¸¤ä¸ª HX711 ä¼ æ„Ÿå™¨è¯»å–æ•°æ®ï¼Œå¹¶æ ¹æ®æŽ¥æ”¶åˆ°çš„æ•°æ®è®¡ç®—åŠ›å€¼ã€‚
+ * @brief º¯Êý hx711_read ´ÓÁ½¸ö HX711 ´«¸ÐÆ÷¶ÁÈ¡Êý¾Ý£¬²¢¸ù¾Ý½ÓÊÕµ½µÄÊý¾Ý¼ÆËãÁ¦Öµ¡£
  */
 void hx711_read(void)
 {
@@ -65,10 +65,10 @@ void hx711_read(void)
 }
 
 /**
- * @brief å‡½æ•°â€œget_hx711_dataâ€æ£€ç´¢â€œforce_leftâ€å’Œâ€œforce_rightâ€çš„å€¼ï¼Œå¹¶å°†å®ƒä»¬åˆ†åˆ«åˆ†é…ç»™å˜é‡â€œflâ€å’Œâ€œfrâ€ã€‚
+ * @brief º¯Êý¡°get_hx711_data¡±¼ìË÷¡°force_left¡±ºÍ¡°force_right¡±µÄÖµ£¬²¢½«ËüÃÇ·Ö±ð·ÖÅä¸ø±äÁ¿¡°fl¡±ºÍ¡°fr¡±¡£
  *
- * @param fl æŒ‡å‘æµ®ç‚¹å˜é‡çš„æŒ‡é’ˆï¼Œè¯¥å˜é‡å°†å­˜å‚¨å·¦ä¾§åŠ›ä¼ æ„Ÿå™¨æ•°æ®çš„å€¼ã€‚
- * @param fr å‚æ•°â€œfrâ€æ˜¯ä¸€ä¸ªæŒ‡å‘æµ®ç‚¹å˜é‡çš„æŒ‡é’ˆï¼Œè¯¥å˜é‡å°†å­˜å‚¨å³ä¾§åŠ›ä¼ æ„Ÿå™¨çš„å€¼ã€‚
+ * @param fl Ö¸Ïò¸¡µã±äÁ¿µÄÖ¸Õë£¬¸Ã±äÁ¿½«´æ´¢×ó²àÁ¦´«¸ÐÆ÷Êý¾ÝµÄÖµ¡£
+ * @param fr ²ÎÊý¡°fr¡±ÊÇÒ»¸öÖ¸Ïò¸¡µã±äÁ¿µÄÖ¸Õë£¬¸Ã±äÁ¿½«´æ´¢ÓÒ²àÁ¦´«¸ÐÆ÷µÄÖµ¡£
  */
 void get_hx711_data(fp32 *fl, fp32 *fr)
 {

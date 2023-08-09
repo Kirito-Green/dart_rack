@@ -3,6 +3,19 @@
 // #include "stm32f4xx_hal_tim.h"
 
 /**
+ * 函数“get_max”返回两个给定浮点数之间的最大值。
+ *
+ * @param v1 第一个参数 v1 是单精度浮点数 (fp32)。
+ * @param v2 参数v2是单精度浮点数（fp32）。
+ *
+ * @return v1 和 v2 之间的最大值。
+ */
+fp32 get_max(fp32 v1, fp32 v2)
+{
+    return v1 > v2 ? v1 : v2;
+}
+
+/**
  * @brief 函数“is_zero”检查浮点值是否在一定容差内接近零。
  *
  * @param val 参数“val”的类型为单精度浮点数。
@@ -65,7 +78,7 @@ fp32 choose_shortest_path(fp32 set, fp32 ref, fp32 val_range)
  * 改值越小截止频率变小，带宽窄，跟踪速度变快
  *
  * @return fp32值
-/* “fal”函数是一个非线性处理函数，它将误差值、alpha 值和 delta 值作为输入。 */
+ */
 fp32 fal(fp32 error, fp32 alpha, fp32 delta)
 {
     return fabsf(error) > delta ? pow(fabsf(error), alpha) * sign(error) : error / pow(delta, 1 - alpha);

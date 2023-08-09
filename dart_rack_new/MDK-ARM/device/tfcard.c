@@ -7,7 +7,7 @@
 static FRESULT retsd;
 
 /**
- * @brief å‡½æ•°â€œtfcard_startâ€æŒ‚è½½SDå¡æ–‡ä»¶ç³»ç»Ÿã€‚
+ * @brief º¯Êı¡°tfcard_start¡±¹ÒÔØSD¿¨ÎÄ¼şÏµÍ³¡£
  */
 void tfcard_start(void)
 {
@@ -20,7 +20,7 @@ void tfcard_start(void)
 }
 
 /**
- * @brief å‡½æ•°â€œtfcard_stopâ€é€šè¿‡å–æ¶ˆFATFSé©±åŠ¨ç¨‹åºçš„é“¾æ¥æ¥åœæ­¢TFå¡ã€‚
+ * @brief º¯Êı¡°tfcard_stop¡±Í¨¹ıÈ¡ÏûFATFSÇı¶¯³ÌĞòµÄÁ´½ÓÀ´Í£Ö¹TF¿¨¡£
  */
 void tfcard_stop(void)
 {

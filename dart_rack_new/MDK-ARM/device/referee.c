@@ -6,7 +6,7 @@ uint8_t referee_rx_buf[REFEREE_RX_BUF_NUM];
 RefereeInformation_t referee_information;
 
 /**
- * @brief å‡½æ•°â€œreferee_initâ€ä½¿ç”¨ç¼“å†²åŒºå’Œç¼“å†²åŒºå¤§å°åˆå§‹åŒ– USART6 æ¥æ”¶ DMAã€‚
+ * @brief º¯Êı¡°referee_init¡±Ê¹ÓÃ»º³åÇøºÍ»º³åÇø´óĞ¡³õÊ¼»¯ USART6 ½ÓÊÕ DMA¡£
  */
 void referee_init(void)
 {
@@ -15,13 +15,13 @@ void referee_init(void)
 
 uint16_t cmd_id;
 /**
- * @brief å‡½æ•°â€œdart_rack_get_messageâ€æ£€æŸ¥ä»ç¼“å†²åŒºæ¥æ”¶åˆ°çš„å‘½ä»¤ IDï¼Œå¹¶æ ¹æ®å‘½ä»¤ ID è°ƒç”¨ç‰¹å®šå‡½æ•°ã€‚
- * å¯ç”¨äºæ¥æ”¶å®¢æˆ·ç«¯é£é•–æ¶æ§åˆ¶æŒ‡ä»¤
+ * @brief º¯Êı¡°dart_rack_get_message¡±¼ì²é´Ó»º³åÇø½ÓÊÕµ½µÄÃüÁî ID£¬²¢¸ù¾İÃüÁî ID µ÷ÓÃÌØ¶¨º¯Êı¡£
+ * ¿ÉÓÃÓÚ½ÓÊÕ¿Í»§¶Ë·ÉïÚ¼Ü¿ØÖÆÖ¸Áî
  */
 void dart_rack_get_message(void)
 {
     // cmd_id = (uint16_t)(referee_rx_buf[5] << 8 | referee_rx_buf[6]);
-    memcpy(&cmd_id, &referee_rx_buf[5], 2);
+    memcpy(&cmd_id, &referee_rx_buf[DART_RACK_CMD_POS], DART_RACK_CMD_LENGTH);
     switch (cmd_id) {
         case DART_RACK_CMD_ID:
             dart_client_cmd_update();
@@ -32,7 +32,7 @@ void dart_rack_get_message(void)
 }
 
 /**
- * @brief å‡½æ•°â€œdart_client_cmd_updateâ€ç”¨äºæ›´æ–°å®¢æˆ·ç«¯æŒ‡ä»¤ã€‚
+ * @brief º¯Êı¡°dart_client_cmd_update¡±ÓÃÓÚ¸üĞÂ¿Í»§¶ËÖ¸Áî¡£
  */
 void dart_client_cmd_update(void)
 {
@@ -48,9 +48,9 @@ void dart_client_cmd_update(void)
 }
 
 /**
- * @brief å‡½æ•°â€œget_referee_informationâ€å°†â€œreferee_informationâ€ç»“æ„çš„å†…å®¹å¤åˆ¶åˆ°â€œInfâ€ç»“æ„ä¸­ã€‚
+ * @brief º¯Êı¡°get_referee_information¡±½«¡°referee_information¡±½á¹¹µÄÄÚÈİ¸´ÖÆµ½¡°Inf¡±½á¹¹ÖĞ¡£
  *
- * @param Inf æŒ‡å‘ RefereeInformation_t ç±»å‹çš„ç»“æ„çš„æŒ‡é’ˆã€‚
+ * @param Inf Ö¸Ïò RefereeInformation_t ÀàĞÍµÄ½á¹¹µÄÖ¸Õë¡£
  */
 void get_referee_information(RefereeInformation_t *Inf)
 {

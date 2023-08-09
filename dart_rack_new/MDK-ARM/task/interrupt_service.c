@@ -9,6 +9,7 @@
 #include "setting.h"
 #include <string.h>
 #include <stdio.h>
+#include "launch_thread.h"
 
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
@@ -79,6 +80,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 /**
  * @brief 该函数处理 USART1 的中断并检查空闲标志是否设置，然后清除该标志，停止空闲传输，如果长度为 18，则处理接收到的数据。
+ * 用于处理遥控器发送数据，更新遥控器离线计数器。
  */
 int8_t rx_len;
 void USART1_IRQHandler(void)
@@ -100,6 +102,7 @@ void USART1_IRQHandler(void)
 
 /**
  * @brief 该函数处理 USART6 的中断并在空闲标志置位时执行操作。
+ * 读裁判系统数据，更新裁判系统离线计数器。
  */
 int8_t referee_rx_len;
 void USART6_IRQHandler(void)
@@ -237,13 +240,14 @@ void CommuniteOfflineStateUpdate(void)
 }
 
 /**
- * @brief 函数“EXTI2_IRQHandler”是一个中断处理程序，用于重置电机的距离，然后调用 HAL_GPIO_EXTI_IRQHandler 函数。
+ * @brief 函数“EXTI2_IRQHandler”是一个中断处理程序，用于重置电机的距离和目标，然后调用 HAL_GPIO_EXTI_IRQHandler 函数。
  */
 void EXTI2_IRQHandler(void)
 {
     /* USER CODE BEGIN EXTI2_IRQn 0 */
     // printf("EXTI2_IRQHandler\r\n");
     motor_reset_dist_ecd();
+    motor_reset_target();
     /* USER CODE END EXTI2_IRQn 0 */
     HAL_GPIO_EXTI_IRQHandler(KEY_Pin);
     /* USER CODE BEGIN EXTI2_IRQn 1 */

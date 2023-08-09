@@ -63193,9 +63193,9 @@ This field configures the timeout counter that triggers a low-power reception ti
                 <description>High-speed transmission timeout counter
 This field configures the timeout counter that triggers a high-speed transmission timeout contention detection (measured in TOCKDIV cycles). 
 If using the non-burst mode and there is no enough time to switch from high-speed to low-power and back in the period from one line data finishing to the next line sync start, the DSI link returns the low-power state once per frame, then configure the TOCKDIV and HSTX_TOCNT to be in accordance with:
-HSTX_TOCNT * lanebyteclkperiod * TOCKDIV ≥ the time of one FRAME data transmission * (1 + 10%)
+HSTX_TOCNT * lanebyteclkperiod * TOCKDIV � the time of one FRAME data transmission * (1 + 10%)
 In burst mode, RGB pixel packets are time-compressed, leaving more time during a scan line. Therefore, if in burst mode and there is enough time to switch from high-speed to low-power and back in the period from one line data finishing to the next line sync start, the DSI link can return low-power mode and back in this time interval to save power. For this, configure the TOCKDIV and HSTX_TOCNT to be in accordance with:
-HSTX_TOCNT * lanebyteclkperiod * TOCKDIV ≥ the time of one LINE data transmission * (1 + 10%)</description>
+HSTX_TOCNT * lanebyteclkperiod * TOCKDIV � the time of one LINE data transmission * (1 + 10%)</description>
                 <bitOffset>16</bitOffset>
                 <bitWidth>16</bitWidth>
                 <access>read-write</access>

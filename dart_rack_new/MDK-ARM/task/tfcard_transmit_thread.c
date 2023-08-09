@@ -33,69 +33,93 @@ FRESULT tfcard_close_motor(void);
 FRESULT tfcard_save_motor(void);
 
 /**
- * @brief å‡½æ•°â€œtfcard_transmit_threadâ€æ˜¯ä¸€ä¸ªè¿ç»­çš„å¾ªç¯ï¼Œå®ƒæ£€æŸ¥ç³»ç»Ÿçš„çŠ¶æ€å¹¶æ ¹æ®çŠ¶æ€æ‰§è¡Œä¸åŒçš„æ“ä½œï¼Œ
- * ä¾‹å¦‚å…³é—­æˆ–æ‰“å¼€ç”µæœºæ–‡ä»¶ã€å°†ç”µæœºæ•°æ®ä¿å­˜åˆ° TF å¡ä»¥åŠå»¶è¿Ÿä¸€å®šæ—¶é—´ã€‚
+ * @brief º¯Êı¡°tfcard_transmit_thread¡±ÊÇÒ»¸öÁ¬ĞøµÄÑ­»·£¬Ëü¼ì²éÏµÍ³µÄ×´Ì¬²¢¸ù¾İ×´Ì¬Ö´ĞĞ²»Í¬µÄ²Ù×÷£¬
+ * ÀıÈç¹Ø±Õ»ò´ò¿ªµç»úÎÄ¼ş¡¢½«µç»úÊı¾İ±£´æµ½ TF ¿¨ÒÔ¼°ÑÓ³ÙÒ»¶¨Ê±¼ä¡£
  *
- * @param argument â€œargumentâ€å‚æ•°æ˜¯æŒ‡å‘å¯èƒ½ä¼ é€’ç»™çº¿ç¨‹çš„ä»»ä½•é™„åŠ å‚æ•°çš„æŒ‡é’ˆã€‚åœ¨è¿™ç§æƒ…å†µä¸‹ï¼Œå®ƒä¸ä¼šè¢«ä½¿ç”¨å¹¶ä¸”å¯ä»¥è¢«å¿½ç•¥ã€‚
+ * @param argument ¡°argument¡±²ÎÊıÊÇÖ¸Ïò¿ÉÄÜ´«µİ¸øÏß³ÌµÄÈÎºÎ¸½¼Ó²ÎÊıµÄÖ¸Õë¡£ÔÚÕâÖÖÇé¿öÏÂ£¬Ëü²»»á±»Ê¹ÓÃ²¢ÇÒ¿ÉÒÔ±»ºöÂÔ¡£
  */
 void tfcard_transmit_thread(void const *argument)
 {
-    tfcard_start();
+    /* ÒôÀÖÊÓÆµÁª¶¯*/
+    // tfcard_start();
+    // for (;;) {
+    //     get_state(&state);
+    //     switch (state) {
+    //         case DART_RACK_NO_FORCE:
+    //             if (motor_file_open_flag) {
+    //                 if (tfcard_close_motor() == FR_OK) {
+    //                     printf("tfcard close ok\r\n");
+    //                     motor_file_open_flag = 0;
+    //                     beep_fine();
+    //                 } else {
+    //                     printf("tfcard close error\r\n");
+    //                     beep_alarm();
+    //                 }
+    //             }
+    //             /* --------------------------------- ÒôÀÖÊı¾İ´«Êä --------------------------------- */
+
+    //             /* --------------------------------- ÊÓÆµÊı¾İ´«Êä --------------------------------- */
+
+    //             osDelay(100);
+    //             break;
+    //         default:
+    //             /* --------------------------------- µç»úÊı¾İ´æ´¢ --------------------------------- */
+    //             if (!motor_file_open_flag) {
+    //                 retsd = tfcard_open_motor();
+    //                 if (retsd == FR_OK) {
+    //                     printf("tfcard open ok\r\n");
+    //                     motor_file_open_flag = 1;
+    //                     beep_fine();
+    //                 } else {
+    //                     printf("tfcard open error: %d\r\n", retsd);
+    //                     beep_alarm();
+    //                 }
+    //             }
+
+    //             retsd = tfcard_save_motor();
+    //             if (retsd == FR_OK) {
+    //                 beep_fine();
+    //                 printf("tfcard save ok\r\n");
+    //             } else {
+    //                 beep_alarm();
+    //                 printf("tfcard save error: %d\r\n", retsd);
+    //             }
+    //             osDelay(3000);
+    //             break;
+    //     }
+    // }
+
+    /* µ¥´æ´¢ */
+    osDelay(500);
+
+    retsd = tfcard_open_motor();
+    if (retsd == FR_OK) {
+        printf("tfcard open ok\r\n");
+        beep_fine();
+    } else {
+        printf("tfcard open error: %d\r\n", retsd);
+        beep_alarm();
+    }
 
     for (;;) {
-        get_state(&state);
-        switch (state) {
-            case DART_RACK_NO_FORCE:
-                if (motor_file_open_flag) {
-                    if (tfcard_close_motor() == FR_OK) {
-                        printf("tfcard close ok\r\n");
-                        motor_file_open_flag = 0;
-                        beep_fine();
-                    } else {
-                        printf("tfcard close error\r\n");
-                        beep_alarm();
-                    }
-                }
-                /* --------------------------------- éŸ³ä¹æ•°æ®ä¼ è¾“ --------------------------------- */
-
-                /* --------------------------------- è§†é¢‘æ•°æ®ä¼ è¾“ --------------------------------- */
-
-                osDelay(100);
-                break;
-            default:
-                /* --------------------------------- ç”µæœºæ•°æ®å­˜å‚¨ --------------------------------- */
-                if (!motor_file_open_flag) {
-                    retsd = tfcard_open_motor();
-                    if (retsd == FR_OK) {
-                        printf("tfcard open ok\r\n");
-                        motor_file_open_flag = 1;
-                        beep_fine();
-                    } else {
-                        printf("tfcard open error: %d\r\n", retsd);
-                        beep_alarm();
-                    }
-                }
-
-                retsd = tfcard_save_motor();
-                if (retsd == FR_OK) {
-                    beep_fine();
-                    printf("tfcard save ok\r\n");
-                } else {
-                    beep_alarm();
-                    printf("tfcard save error: %d\r\n", retsd);
-                }
-                osDelay(3000);
-                break;
+        retsd = tfcard_save_motor();
+        if (retsd == FR_OK) {
+            beep_fine();
+            printf("tfcard save ok\r\n");
+        } else {
+            beep_alarm();
+            printf("tfcard save error: %d\r\n", retsd);
         }
+        osDelay(3000);
     }
 }
 
 /**
- * @brief å‡½æ•°â€œtfcard_read_motorâ€ä» SD å¡ä¸Šçš„æ–‡ä»¶è¯»å–ç”µæœºæµ‹é‡å€¼ã€‚
+ * @brief º¯Êı¡°tfcard_read_motor¡±´Ó SD ¿¨ÉÏµÄÎÄ¼ş¶ÁÈ¡µç»ú²âÁ¿Öµ¡£
  *
- * @param measure å‚æ•°â€œmeasureâ€æ˜¯æŒ‡å‘â€œDartRackMotorMeasure_tâ€ç±»å‹ç»“æ„çš„æŒ‡é’ˆã€‚è¯¥ç»“æ„å¯èƒ½åŒ…å«å°†ä» SD å¡è¯»å–çš„æ•°æ®å¡«å……çš„å˜é‡æˆ–å­—æ®µã€‚
+ * @param measure ²ÎÊı¡°measure¡±ÊÇÖ¸Ïò¡°DartRackMotorMeasure_t¡±ÀàĞÍ½á¹¹µÄÖ¸Õë¡£¸Ã½á¹¹¿ÉÄÜ°üº¬½«´Ó SD ¿¨¶ÁÈ¡µÄÊı¾İÌî³äµÄ±äÁ¿»ò×Ö¶Î¡£
  *
- * @return FRESULTç±»å‹çš„å˜é‡ï¼Œæ˜¯è¡¨ç¤ºæ–‡ä»¶æ“ä½œæˆåŠŸæˆ–å¤±è´¥çš„ç»“æœç ã€‚
+ * @return FRESULTÀàĞÍµÄ±äÁ¿£¬ÊÇ±íÊ¾ÎÄ¼ş²Ù×÷³É¹¦»òÊ§°ÜµÄ½á¹ûÂë¡£
  */
 FRESULT tfcard_read_motor(DartRackMotorMeasure_t *measure)
 {
@@ -159,9 +183,9 @@ FRESULT tfcard_read_motor(DartRackMotorMeasure_t *measure)
 }
 
 /**
- * @brief å‡½æ•°â€œtfcard_open_motorâ€æ‰“å¼€SDä¸Šç”µæœºæ•°æ®æ–‡ä»¶å¹¶è¿”å›ç»“æœã€‚
+ * @brief º¯Êı¡°tfcard_open_motor¡±´ò¿ªSDÉÏµç»úÊı¾İÎÄ¼ş²¢·µ»Ø½á¹û¡£
  *
- * @return FRESULT ç±»å‹çš„å˜é‡ã€‚
+ * @return FRESULT ÀàĞÍµÄ±äÁ¿¡£
  */
 FRESULT tfcard_open_motor(void)
 {
@@ -183,9 +207,9 @@ FRESULT tfcard_open_motor(void)
 }
 
 /**
- * @brief å‡½æ•°â€œtfcard_close_motorâ€å…³é—­ SD å¡ä¸Šçš„ç”µæœºæ•°æ®æ–‡ä»¶å’Œç›®å½•å¹¶è¿”å›ç»“æœã€‚
+ * @brief º¯Êı¡°tfcard_close_motor¡±¹Ø±Õ SD ¿¨ÉÏµÄµç»úÊı¾İÎÄ¼şºÍÄ¿Â¼²¢·µ»Ø½á¹û¡£
  *
- * @return FRESULT ç±»å‹çš„å˜é‡ã€‚
+ * @return FRESULT ÀàĞÍµÄ±äÁ¿¡£
  */
 FRESULT tfcard_close_motor(void)
 {
@@ -207,9 +231,9 @@ FRESULT tfcard_close_motor(void)
 }
 
 /**
- * @brief è¯¥åŠŸèƒ½å°†ç”µæœºè·ç¦»å€¼ä¿å­˜åˆ° TF å¡ä¸­ã€‚
+ * @brief ¸Ã¹¦ÄÜ½«µç»ú¾àÀëÖµ±£´æµ½ TF ¿¨ÖĞ¡£
  *
- * @return å˜é‡â€œretsdâ€çš„å€¼ï¼Œå…¶ç±»å‹ä¸º FRESULTã€‚
+ * @return ±äÁ¿¡°retsd¡±µÄÖµ£¬ÆäÀàĞÍÎª FRESULT¡£
  */
 FRESULT tfcard_save_motor(void)
 {

@@ -3,7 +3,7 @@
   * @file       can_receive.c/h
   * @brief      there is CAN interrupt function  to receive motor data,
   *             and CAN send function to send motor current to control motor.
-  *             ������CAN�жϽ��պ��������յ������,CAN���ͺ������͵���������Ƶ��.
+  *             ������CAN�жϽ��պ��������յ������,CAN���ͺ������͵���������Ƶ��.
   * @note
   * @history
   *  Version    Date            Author          Modification

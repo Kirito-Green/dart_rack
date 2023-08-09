@@ -34,11 +34,11 @@ static CAN_TxHeaderTypeDef can_tx_message;
 static uint8_t MotorSendBuffer[16];
 
 /**
- * @brief 函数“cal_angle”根据输入值计算角度（以度为单位）。
+ * @brief 函数“cal_angle”根据输入值计算角度(以度为单位)。
  *
  * @param ecd 参数“ecd”的类型为int16_t，它是一个16位有符号整数。它表示编码器计数的值。
  *
- * @return 表示角度（以度为单位）的浮点值 (fp32)。
+ * @return 表示角度(以度为单位)的浮点值 (fp32)。
  */
 fp32 cal_angle(int16_t ecd)
 {
@@ -102,7 +102,7 @@ static motor_measure_t pitch_motor_measure;
 static angle_encoder_t yaw_angle_encoder;
 // static angle_encoder_t pitch_angle_encoder;
 
-/* `get_motor_measure` 宏用于根据接收到的 CAN 数据更新电机测量值。它有两个参数：“ptr”（指向电机测量结构的指针）和“data”（接收到的 CAN 数据）。 */
+/* `get_motor_measure` 宏用于根据接收到的 CAN 数据更新电机测量值。它有两个参数：“ptr”(指向电机测量结构的指针)和“data”(接收到的 CAN 数据)。 */
 #define get_motor_measure(ptr, data)                                                             \
     {                                                                                            \
         (ptr)->last_ecd = (ptr)->ecd;                                                            \
@@ -116,7 +116,7 @@ static angle_encoder_t yaw_angle_encoder;
         (ptr)->flag        = 1;                                                                  \
     }
 
-/* `get_angle_measure` 宏用于根据接收到的 CAN 数据更新角度测量值。它有两个参数：“ptr”（指向角度测量结构的指针）和“data”（接收到的 CAN 数据）。 */
+/* `get_angle_measure` 宏用于根据接收到的 CAN 数据更新角度测量值。它有两个参数：“ptr”(指向角度测量结构的指针)和“data”(接收到的 CAN 数据)。 */
 #define get_angle_measure(ptr, data)                                     \
     {                                                                    \
         (ptr)->angle            = (int16_t)((data)[3] << 8 | (data)[2]); \
@@ -158,7 +158,6 @@ void motor_process(uint32_t MotorID, CAN_HandleTypeDef *hcan, uint8_t *message)
             break;
         case PITCH_ANGLE_ENCODER_ID:
             // get_angle_measure(&pitch_angle_encoder, message);
-            get_motor_measure(&yaw_motor_measure, message);
             break;
         default:
             break;

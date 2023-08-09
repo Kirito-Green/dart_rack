@@ -4,7 +4,7 @@ The discovery kit enables a wide range of use cases taking advantage of
 premium graphics, audio, multi-sensor support, WVGA color display,
 security, memory extension and connectivity features. An embedded
 ST-LINK/V2-1 debugger/programmer is included; specialized add-on boards
-can be connected thanks to the **Arduinoâ„¢ UNO** or to the **expansion**
+can be connected thanks to the **Arduino â„ UNO** or to the **expansion**
 connectors.
 
 # Board pinout
@@ -16,7 +16,7 @@ connectors.
 
 # Getting started
 
-- [Getting started guide](DM00236781.pdf)
+-   [Getting started guide](DM00236781.pdf)
 
 ## ST-LINK driver installation and firmware upgrade
 
@@ -31,7 +31,7 @@ connectors.
 
 # Technical reference
 
-- [STM32F469NI microcontroller](https://www.st.com/web/catalog/mmc/FM141/SC1169/SS1577/LN1876/PF260683?s_searchtype=partnumber)
-- [32F469IDISCOVERY board](https://www.st.com/web/catalog/tools/FM116/CL1620/SC959/SS1532/LN1848/PF262395?s_searchtype=partnumber)
-- [User manual](DM00218846.pdf)
-- [Data brief](DM00218382.pdf)
+-   [STM32F469NI microcontroller](https://www.st.com/web/catalog/mmc/FM141/SC1169/SS1577/LN1876/PF260683?s_searchtype=partnumber)
+-   [32F469IDISCOVERY board](https://www.st.com/web/catalog/tools/FM116/CL1620/SC959/SS1532/LN1848/PF262395?s_searchtype=partnumber)
+-   [User manual](DM00218846.pdf)
+-   [Data brief](DM00218382.pdf)

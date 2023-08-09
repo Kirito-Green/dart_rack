@@ -219,7 +219,7 @@ void sbus_to_rc(void)
 
 // 长按触发区域的键值检测
 
-bool_t cheak_key_press(uint16_t key)
+bool_t check_key_press(uint16_t key)
 {
     if ((rc_ctrl.key.v & key) == 0)
         return 0;
@@ -227,7 +227,7 @@ bool_t cheak_key_press(uint16_t key)
     return 1;
 }
 
-bool_t cheak_key_press_once(uint16_t key)
+bool_t check_key_press_once(uint16_t key)
 {
     if ((rc_ctrl.key.v & key) == 0) {
         key_used &= (~key);
@@ -392,7 +392,7 @@ int int_normalized_limit(int input)
 /**
  * @brief 函数“fp32_normalized_limit”将输入值限制在-1.0到1.0的范围内。
  *
- * @param input 输入参数是单精度浮点数（fp32）。
+ * @param input 输入参数是单精度浮点数(fp32)。
  *
  * @return 检查并可能修改输入值以确保其落在 -1.0f 到 1.0f 的范围内。
  */

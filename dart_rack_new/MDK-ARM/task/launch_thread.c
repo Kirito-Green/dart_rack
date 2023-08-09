@@ -18,44 +18,60 @@
 #include "ff.h"
 #include "beep.h"
 #include "tfcard_transmit_thread.h"
+#include "lazer.h"
 
-static DartRack_t dart_rack;         // é£é•–æ¶çŠ¶æ€
-static RC_ctrl_t remote;             // é¥æ§å™¨çŠ¶æ€
-static OfflineMonitor_t offline;     // æ¨¡å—ç¦»çº¿çŠ¶æ€
-static RefereeInformation_t referee; // è£åˆ¤ç³»ç»Ÿæ•°æ®
+static DartRack_t dart_rack;         // ·ÉïÚ¼Ü×´??
+static RC_ctrl_t remote;             // Ò£¿ØÆ÷×´??
+static OfflineMonitor_t offline;     // Ä£¿éÀëÏß×´??
+static RefereeInformation_t referee; // ²ÃÅĞÏµÍ³Êı¾İ
 
-/* é£é•–çŠ¶æ€ */
-static bool_t dart_rack_cmd_flag;    // å®¢æˆ·ç«¯å‘½ä»¤æ ‡å¿—
-static bool_t dart_rack_reset_flag;  // é£é•–æ¶å¤ä½æ ‡å¿—
-static int8_t dart_rack_shoot_state; // é£é•–å‘å°„çŠ¶æ€
-static int8_t motor_load_state;      // è£…å¡«ç”µæœºçŠ¶æ€æœº
-static int8_t motor_drag_state;      // æ‹–æ‹½ç”µæœºçŠ¶æ€æœº
-static int8_t motor_adjust_state;    // è°ƒèŠ‚ç”µæœºçŠ¶æ€æœº
-static int8_t servo_load_state;      // è£…å¡«èˆµæœºçŠ¶æ€æœº
-static int8_t servo_launch_state;    // å‘å°„èˆµæœºçŠ¶æ€æœº
-static int8_t dart_rack_client_cmd;  // å®¢æˆ·ç«¯å‘½ä»¤
-static int8_t dart_rack_aim_shoot;   // é£é•–æ¶ç„å‡†ç‚¹
-static int8_t dart_rack_num_count;   // é£é•–æ¶å‘å°„æ¬¡æ•°
+/* ·ÉïÚ×´?? */
+static bool_t dart_rack_cmd_flag;                  // ¿Í»§¶ËÃüÁî±ê??
+static bool_t dart_rack_reset_flag;                // ·ÉïÚ¼Ü¸´Î»±ê??
+static int8_t dart_rack_client_cmd;                // ¿Í»§¶ËÃü??
+static int8_t dart_rack_aim_shoot;                 // ·ÉïÚ¼ÜÃé×¼µã
+static int8_t dart_rack_num_count;                 // ·ÉïÚ¼Ü·¢Éä´Î??
+static DartRackShootState_e dart_rack_shoot_state; // ·ÉïÚ·¢Éä×´??
+static MotorLoadState_e motor_load_state;          // ×°Ìîµç»ú×´Ì¬»ú
+static MotorDragState_e motor_drag_state;          // ÍÏ×§µç»ú×´Ì¬»ú
+static MotorAdjustState_e motor_adjust_state;      // µ÷½Úµç»ú×´Ì¬»ú
+static ServoLoadState_e servo_load_state;          // ×°Ìî¶æ»ú×´Ì¬»ú
+static ServoLaunchState_e servo_launch_state;      // ·¢Éä¶æ»ú×´Ì¬»ú
+static ServoBlockState_e servo_block_state;        // µ²°å¶æ»ú×´Ì¬»ú
 
-/* äº‹ä»¶è®°å½• */
-static uint32_t dart_rack_shoot_count; // é£é•–æ¶å‘å°„è®¡æ—¶
-static uint32_t motor_load_count;      // è£…å¡«ç”µæœºè®¡æ—¶
-static uint32_t motor_drag_count;      // æ‹–æ‹½ç”µæœºè®¡æ—¶
-static uint32_t motor_adjust_count;    // è°ƒèŠ‚ç”µæœºè®¡æ—¶
-static uint32_t servo_load_count;      // è£…å¡«èˆµæœºè®¡æ—¶
-static uint32_t servo_launch_count;    // å‘å°„èˆµæœºè®¡æ—¶
+/* ÊÂ¼ş¼ÇÂ¼ */
+static uint32_t dart_rack_shoot_count; // ·ÉïÚ¼Ü·¢Éä¼Æ??
+static uint32_t motor_load_count;      // ×°Ìîµç»ú¼ÆÊ±
+static uint32_t motor_drag_count;      // ÍÏ×§µç»ú¼ÆÊ±
+static uint32_t motor_adjust_count;    // µ÷½Úµç»ú¼ÆÊ±
+static uint32_t servo_load_count;      // ×°Ìî¶æ»ú¼ÆÊ±
+static uint32_t servo_launch_count;    // ·¢Éä¶æ»ú¼ÆÊ±
+static uint32_t servo_block_count;     // µ²°å¶æ»ú¼ÆÊ±
 
-/* äº‘å°ä½ç½® */
-static fp32 yaw_cmd_temp;
-static fp32 pitch_cmd_temp;
+static uint32_t motor_drag_max_time; // ¿É±äÊ±¼ä
+static uint32_t motor_load_max_time;
+static uint32_t motor_adjust_max_time;
 
-/* èˆµæœºè§’åº¦ */
+/* ÔÆÌ¨Î»ÖÃ */
+static fp32 temp_cmd;
+static fp32 temp_yaw_cmd;
+static fp32 temp_pitch_cmd;
+
+/* µç»úÎ»ÖÃ */
+static fp32 temp_adjust_cmd;
+static fp32 adjust_tower_position = ADJUST_TOWER_POSITION;
+static fp32 adjust_base_position  = ADJUST_BASE_POSITION;
+
+/* ¶æ»ú½Ç¶È */
 static int16_t tim_right_first_compare  = TIM_RIGHT_FIRST_COMPARE_UP;
 static int16_t tim_right_second_compare = TIM_RIGHT_SECOND_COMPARE_UP;
 static int16_t tim_left_first_compare   = TIM_LEFT_FIRST_COMPARE_UP;
 static int16_t tim_left_second_compare  = TIM_LEFT_SECOND_COMPARE_UP;
 static int16_t tim_bottom_compare       = TIM_BOTTOM_COMPARE_UP;
+static int16_t tim_top_compare          = TIM_TOP_COMPARE_UP;
 
+/* Á¬·¢±êÖ¾ */
+static bool_t dart_rack_double_shoot_flag;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 
@@ -67,55 +83,60 @@ void servo_load_up(void);
 void servo_load_down(void);
 void servo_launch_up(void);
 void servo_launch_down(void);
+void servo_block_up(void);
+void servo_block_mid(void);
+void servo_block_down(void);
 void gimbal_no_force(void);
 void shoot_no_force(void);
 void tfcard_read(void);
 void dart_rack_shoot(void);
 void dart_rack_state_update(void);
+void dart_rack_match_state_reset(void);
 void motor_measure_update(void);
 void motor_target_update(void);
 void encoder_measure_update(void);
 void motor_algorithm_update(void);
+int16_t dist_cal_max_time(fp32 dist, int16_t time_measure);
 
 /**
- * @brief å‡½æ•°â€œlaunch_threadâ€ä¸æ–­æ›´æ–°å„ç§æ•°æ®å¹¶æ‰§è¡Œä¸é£é•–å°„å‡»ç³»ç»Ÿç›¸å…³çš„åŠ¨ä½œã€‚
+ * @brief º¯Êı¡°launch_thread¡±²»¶Ï¸üĞÂ¸÷ÖÖÊı¾İ²¢Ö´ĞĞÓë·ÉïÚÉä»÷ÏµÍ³Ïà¹ØµÄ¶¯×÷??
  *
- * @param argument â€œargumentâ€å‚æ•°æ˜¯æŒ‡å‘è¦ä¼ é€’ç»™çº¿ç¨‹å‡½æ•°çš„ä»»ä½•é™„åŠ æ•°æ®çš„æŒ‡é’ˆã€‚å®ƒçš„ç±»å‹ä¸ºâ€œvoid const
- * *â€ï¼Œè¿™æ„å‘³ç€å®ƒå¯ä»¥æ˜¯æŒ‡å‘ä»»ä½•ç±»å‹æ•°æ®çš„æŒ‡é’ˆã€‚åœ¨è¿™ç§æƒ…å†µä¸‹ï¼Œå®ƒæ²¡æœ‰åœ¨å‡½æ•°ä¸­ä½¿ç”¨ï¼Œæ‰€ä»¥ä½ å¯ä»¥å¿½ç•¥
+ * @param argument ¡°argument¡±²ÎÊıÊÇÖ¸ÏòÒª´«µİ¸øÏß³Ìº¯ÊıµÄÈÎºÎ¸½¼ÓÊı¾İµÄÖ¸Õë¡£ËüµÄÀàĞÍÎª¡°void const
+ * *¡±£¬ÕâÒâÎ¶×ÅËü¿ÉÒÔÊÇÖ¸ÏòÈÎºÎÀàĞÍÊı¾İµÄÖ¸Õë¡£ÔÚÕâÖÖÇé¿öÏÂ£¬ËüÃ»ÓĞÔÚº¯ÊıÖĞÊ¹ÓÃ£¬ËùÒÔÄã¿ÉÒÔºöÂÔ
  */
 void launch_thread(void const *argument)
 {
     tfcard_read();
     for (;;) {
-        remote = *get_remote_control_point();    // è·å–é¥æ§å™¨æ•°æ®
-        device_offline_monitor_update(&offline); // è·å–æ¨¡å—ç¦»çº¿æ•°æ®
-        get_referee_information(&referee);       // è·å–è£åˆ¤ç³»ç»Ÿæ•°æ®
+        remote = *get_remote_control_point();    // »ñÈ¡Ò£¿ØÆ÷Êı??
+        device_offline_monitor_update(&offline); // »ñÈ¡Ä£¿éÀëÏßÊı¾İ
+        get_referee_information(&referee);       // »ñÈ¡²ÃÅĞÏµÍ³Êı¾İ
 
-        dart_rack_state_update(); // é£é•–æ¶çŠ¶æ€è½¬åŒ–
-        motor_measure_update();   // ç”µæœºæ•°æ®æ›´æ–°
-        encoder_measure_update(); // ç¼–ç å™¨æ›´æ–°
-        motor_algorithm_update(); // ç”µæœºPIDæ›´æ–°
-        gimbal_command_update();  // äº‘å°æŒ‡ä»¤æ›´æ–°
-        shoot_command_update();   // å‘å°„æŒ‡ä»¤æ›´æ–°
-        dart_rack_shoot();        // é£é•–å‘å°„
+        dart_rack_state_update(); // ·ÉïÚ¼Ü×´Ì¬×ª??
+        motor_measure_update();   // µç»úÊı¾İ¸üĞÂ
+        encoder_measure_update(); // ±àÂëÆ÷¸ü??
+        motor_algorithm_update(); // µç»úPID¸üĞÂ
+        gimbal_command_update();  // ÔÆÌ¨Ö¸Áî¸üĞÂ
+        shoot_command_update();   // ·¢ÉäÖ¸Áî¸üĞÂ
+        dart_rack_shoot();        // ·ÉïÚ·¢Éä
 
         osDelay(1);
     }
 }
 
 /**
- * @brief å‡½æ•°â€œservo_initâ€åœ¨ä¸­æ–­æ¨¡å¼ä¸‹å¯åŠ¨ TIM4 å’Œ TIM5 çš„åŸºæœ¬å®šæ—¶å™¨ã€‚
- *  TIM4 å’Œ TIM5ç”¨äºæ§åˆ¶èˆµæœºçš„è£…å¡«å’Œå‘å°„
+ * @brief º¯Êı¡°servo_init¡±ÔÚÖĞ¶ÏÄ£Ê½ÏÂÆô?? TIM4 ?? TIM5 µÄ»ù±¾¶¨Ê±Æ÷??
+ *  TIM4 ?? TIM5ÓÃÓÚ¿ØÖÆ¶æ»úµÄ×°ÌîºÍ·¢Éä
  */
 void servo_init(void)
 {
-    HAL_TIM_Base_Start_IT(&htim4);
-    HAL_TIM_Base_Start_IT(&htim5);
+    HAL_TIM_Base_Start(&htim4);
+    HAL_TIM_Base_Start(&htim5);
 }
 
 /**
- * @brief å‡½æ•°â€œservo_startâ€å¯åŠ¨ä¸¤ä¸ªä¸åŒå®šæ—¶å™¨çš„å¤šä¸ªé€šé“çš„ PWM è¾“å‡ºã€‚
- *  èˆµæœºå¯åŠ¨pwmè¾“å‡º
+ * @brief º¯Êı¡°servo_start¡±Æô¶¯Á½¸ö²»Í¬¶¨Ê±Æ÷µÄ¶à¸öÍ¨µÀ?? PWM Êä³ö??
+ *  ¶æ»úÆô¶¯pwmÊä³ö
  */
 void servo_start(void)
 {
@@ -124,11 +145,12 @@ void servo_start(void)
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 }
 
 /**
- * @brief å‡½æ•°â€œservo_no_forceâ€åœæ­¢ä¸¤ä¸ªä¸åŒå®šæ—¶å™¨çš„å¤šä¸ªé€šé“çš„ PWM ä¿¡å·ã€‚
- * èˆµæœºå…³é—­pwmè¾“å‡º
+ * @brief º¯Êı¡°servo_no_force¡±Í£Ö¹Á½¸ö²»Í¬¶¨Ê±Æ÷µÄ¶à¸öÍ¨µÀ?? PWM ĞÅºÅ??
+ * ¶æ»ú¹Ø±ÕpwmÊä³ö
  */
 void servo_no_force(void)
 {
@@ -137,10 +159,11 @@ void servo_no_force(void)
     HAL_TIM_PWM_Stop(&htim5, TIM_CHANNEL_2);
     HAL_TIM_PWM_Stop(&htim5, TIM_CHANNEL_1);
     HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
 }
 
 /**
- * @brief å‡½æ•°â€œservo_updateâ€æ›´æ–°èˆµæœºçš„è§’åº¦ã€‚
+ * @brief º¯Êı¡°servo_update¡±¸üĞÂ¶æ»úµÄ½Ç¶È??
  */
 void servo_update(void)
 {
@@ -149,10 +172,11 @@ void servo_update(void)
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_2, tim_left_first_compare);
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, tim_left_second_compare);
     __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, tim_bottom_compare);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, tim_top_compare);
 }
 
 /**
- * @brief å‡½æ•°â€œservo_load_upâ€å°†èˆµæœºè§’åº¦è®¾ç½®ä¸ºå¾…è£…å¡«çŠ¶æ€
+ * @brief º¯Êı¡°servo_load_up¡±½«¶æ»ú½Ç¶ÈÉèÖÃÎª´ı×°Ìî×´??
  */
 void servo_load_up(void)
 {
@@ -163,7 +187,7 @@ void servo_load_up(void)
 }
 
 /**
- * å‡½æ•°â€œservo_load_downâ€å°†èˆµæœºè§’åº¦è®¾ç½®ä¸ºè£…å¡«çŠ¶æ€
+ * º¯Êı¡°servo_load_down¡±½«¶æ»ú½Ç¶ÈÉèÖÃÎª×°Ìî×´??
  */
 void servo_load_down(void)
 {
@@ -174,7 +198,7 @@ void servo_load_down(void)
 }
 
 /**
- * å‡½æ•°â€œservo_launch_upâ€å°†å‘å°„èˆµæœºè§’åº¦è®¾ç½®ä¸ºå¾…å‘å°„çŠ¶æ€
+ * º¯Êı¡°servo_launch_up¡±½«·¢Éä¶æ»ú½Ç¶ÈÉèÖÃÎª´ı·¢Éä×´??
  */
 void servo_launch_up(void)
 {
@@ -182,7 +206,7 @@ void servo_launch_up(void)
 }
 
 /**
- * å‡½æ•°â€œservo_launch_downâ€å°†å‘å°„èˆµæœºè§’åº¦è®¾ç½®ä¸ºå‘å°„çŠ¶æ€
+ * º¯Êı¡°servo_launch_down¡±½«·¢Éä¶æ»ú½Ç¶ÈÉèÖÃÎª·¢Éä×´??
  */
 void servo_launch_down(void)
 {
@@ -190,7 +214,31 @@ void servo_launch_down(void)
 }
 
 /**
- * å‡½æ•°â€œgimbal_no_forceâ€å°†äº‘å°ç”µæœºæ— åŠ›è¾“å‡ºã€‚
+ * º¯Êı¡°servo_block_up¡±½«µ²°å¶æ»ú½Ç¶ÈÉèÖÃÎª×¼±¸×´??
+ */
+void servo_block_up(void)
+{
+    tim_top_compare = TIM_TOP_COMPARE_UP;
+}
+
+/**
+ * º¯Êı¡°servo_block_mid¡±½«µ²°å¶æ»ú½Ç¶ÈÉèÖÃÎªĞ±½Ç×èµ²×´??
+ */
+void servo_block_mid(void)
+{
+    tim_top_compare = TIM_TOP_COMPARE_MID;
+}
+
+/**
+ * º¯Êıservo_block_down½«µ²°å¶æ»ú½Ç¶ÈÉèÖÃÎª´¹Ö±×èµ²×´??
+ */
+void servo_block_down(void)
+{
+    tim_top_compare = TIM_TOP_COMPARE_DOWN;
+}
+
+/**
+ * º¯Êı¡°gimbal_no_force¡±½«ÔÆÌ¨µç»úÎŞÁ¦Êä³ö??
  */
 void gimbal_no_force(void)
 {
@@ -199,7 +247,7 @@ void gimbal_no_force(void)
 }
 
 /**
- * å‡½æ•°â€œshoot_no_forceâ€å°†å‘å°„ç”µæœºæ— åŠ›è¾“å‡ºã€‚
+ * º¯Êı¡°shoot_no_force¡±½«·¢Éäµç»úÎŞÁ¦Êä³ö??
  */
 void shoot_no_force(void)
 {
@@ -210,13 +258,14 @@ void shoot_no_force(void)
 }
 
 /**
- * @brief å‡½æ•°â€œtfcard_readâ€å°è¯•å¤šæ¬¡ä» TF å¡è¯»å–æ•°æ®ï¼Œå¦‚æœæˆåŠŸåˆ™æ›´æ–°ç”µæœºæµ‹é‡å€¼å’Œç›®æ ‡ã€‚
+ * @brief º¯Êı¡°tfcard_read¡±³¢ÊÔ¶à´Î´Ó TF ¿¨¶ÁÈ¡Êı¾İ£¬Èç¹û³É¹¦Ôò¸üĞÂµç»ú²âÁ¿ÖµºÍÄ¿±ê??
  *
- * @return ä»€ä¹ˆéƒ½æ²¡æœ‰ï¼ˆæ— æ•ˆï¼‰ã€‚
+ * @return Ê²Ã´¶¼Ã»ÓĞ(ÎŞĞ§)??
  */
 void tfcard_read(void)
 {
     uint8_t flag;
+    tfcard_start();
     for (uint8_t i = 0; i < TFCARD_READ_TIMES_MAX; i++) {
         flag = tfcard_read_motor(&dart_rack.motor_measure);
         if (flag == FR_OK) {
@@ -231,7 +280,7 @@ void tfcard_read(void)
 }
 
 /**
- * @brief å‡½æ•°â€œdart_rack_shootâ€æ§åˆ¶ä»é£é•–æ¶å‘å°„é£é•–çš„ä¼ºæœå’Œç”µæœºè¿åŠ¨ã€‚
+ * @brief º¯Êı¡°dart_rack_shoot¡±¿ØÖÆ´Ó·ÉïÚ¼Ü·¢Éä·ÉïÚµÄËÅ·şºÍµç»úÔË¶¯??
  */
 void dart_rack_shoot(void)
 {
@@ -240,42 +289,42 @@ void dart_rack_shoot(void)
                         dart_rack.output.drag_right,
                         dart_rack.output.load,
                         dart_rack.output.adjust);
-    gimbal_motor_control(ZERO_POINT,  //*dart_rack.output.yaw,
-                         ZERO_POINT); // PITCH_MOTOR_DIRECTION * dart_rack.output.pitch);
+    gimbal_motor_control(dart_rack.output.yaw,
+                         dart_rack.output.pitch);
 }
 
 /**
- * @brief å‡½æ•°â€œdart_rack_state_updateâ€æ ¹æ®å„ç§æ¡ä»¶å’Œè¾“å…¥æ›´æ–°é£é•–æ¶çš„çŠ¶æ€ã€‚
+ * @brief º¯Êı¡°dart_rack_state_update¡±¸ù¾İ¸÷ÖÖÌõ¼şºÍÊäÈë¸üĞÂ·ÉïÚ¼ÜµÄ×´Ì¬??
  *
- * @return å‡½æ•° `dart_rack_state_update` æ²¡æœ‰æ˜¾å¼è¿”å›å€¼ã€‚
+ * @return º¯Êı `dart_rack_state_update` Ã»ÓĞÏÔÊ½·µ»ØÖµ??
  */
 DartRackStateMachine_e drslast;
 DartRackStateMachine_e drsthis;
 void dart_rack_state_update(void)
 {
-    drslast = dart_rack.state; // è®°å½•ä¹‹å‰çŠ¶æ€
+    drslast = dart_rack.state; // ¼ÇÂ¼Ö®Ç°×´??
 
-    /* ç”µæœºç¦»çº¿ä¿æŠ¤ */
-    if ( // offline.yaw_motor == DEVICE_OFFLINE ||
-         // offline.pitch_motor == DEVICE_OFFLINE ||
+    /* µç»úÀëÏß±£»¤ */
+    if (offline.yaw_motor == DEVICE_OFFLINE ||
+        offline.pitch_motor == DEVICE_OFFLINE ||
         offline.drag_left_motor == DEVICE_OFFLINE ||
         offline.drag_right_motor == DEVICE_OFFLINE ||
         offline.load_motor == DEVICE_OFFLINE ||
-        offline.adjust_motor == DEVICE_OFFLINE
-        // offline.yaw_angle_encoder == DEVICE_OFFLINE
+        offline.adjust_motor == DEVICE_OFFLINE ||
+        offline.yaw_angle_encoder == DEVICE_OFFLINE
         //  offline.pitch_angle_encoder == DEVICE_OFFLINE
     ) {
         dart_rack.state = DART_RACK_NO_FORCE;
         return;
     }
 
-    /* é¥æ§å™¨ç¦»çº¿ä¿æŠ¤ */
+    /* Ò£¿ØÆ÷ÀëÏß±£?? */
     if (offline.remote == DEVICE_OFFLINE) {
         dart_rack.state = DART_RACK_NO_FORCE;
         return;
     }
 
-    /* yaw PITCHè½´è¶…ä½ä¿æŠ¤ */
+    /* yaw PITCHÖá³¬Î»±£?? */
     // if (dart_rack.encoder.yaw_angle_encoder.angle < YAW_MIN_ANGLE ||
     // dart_rack.encoder.yaw_angle_encoder.angle > YAW_MAX_ANGLE
     //		 dart_rack.encoder.pitch_angle_encoder.angle < PITCH_MIN_ANGLE ||
@@ -285,43 +334,50 @@ void dart_rack_state_update(void)
     //     return;
     // }
 
-    /* é£é•–æ¶çŠ¶æ€æœºæ›´æ–° */
+    /* ·ÉïÚ¼Ü×´Ì¬»ú¸üĞÂ */
     switch (remote.rc.s[0]) {
-            /* å³æ‹¨æ†æ‰“åˆ°æœ€ä¸Šï¼Œé£é•–æ¶è¿›å…¥æ¯”èµ›æ¨¡å¼,è¯¥æ¨¡å¼ä¸‹æ‘©æ“¦è½®å‚æ•°å·²è°ƒå¥½ */
-        case RC_SW_UP:                     // ç”µæœºçŠ¶æ€æ›´æ–°
-            if (dart_rack.state == DART_RACK_MATCH) { // ä¸è¦é‡å¤è®¾å‚æ•°
+            /* ÓÒ²¦¸Ë´òµ½×îÉÏ£¬·ÉïÚ¼Ü½øÈë±ÈÈüÄ£??,¸ÃÄ£Ê½ÏÂÄ¦²ÁÂÖ²ÎÊıÒÑµ÷ºÃ */
+        case RC_SW_UP:                                // µç»ú×´Ì¬¸ü??
+            if (dart_rack.state == DART_RACK_MATCH) { // ²»ÒªÖØ¸´Éè²Î??
                 return;
             }
             servo_start();
-            dart_rack_client_cmd = 0;                   // å®¢æˆ·ç«¯é»˜è®¤å‰å“¨ç«™
-            yaw_cmd_temp         = 0;                   // YAWè½´æŒ‡ä»¤å‘é€è®°å½•
-            dart_rack.target.yaw = YAW_TOWER_ANGLE;     // é»˜è®¤ç„å‡†å‰å“¨ç«™
-            dart_rack_aim_shoot  = DART_RACK_AIM_TOWER; // ç„å‡†æ ‡å¿—
+            dart_rack_match_state_reset();
+            dart_rack_client_cmd = 0;                   // ¿Í»§¶ËÄ¬ÈÏÇ°ÉÚÕ¾
+            dart_rack_num_count  = 0;                   // ·ÉïÚ·¢ÉäÊıÁ¿¼ÆÊıÖÃÁã
+            temp_yaw_cmd         = ZERO_POINT;          // YAWÖáÖ¸Áî·¢ËÍ¼Ç??
+            dart_rack.target.yaw = YAW_TOWER_ANGLE;     // Ä¬ÈÏÃé×¼Ç°ÉÚ??
+            dart_rack_aim_shoot  = DART_RACK_AIM_TOWER; // Ãé×¼±êÖ¾
+            lazer_on();                                 // ¿ªÆô¼¤??
+            dart_rack.state = DART_RACK_MATCH;
 
             break;
-            /* å³æ‹¨æ†æ‰“åˆ°ä¸­é—´ï¼Œé£é•–æ¶è¿›å…¥è°ƒè¯•æ¨¡å¼,è¯¥æ¨¡å¼ä¸‹æ‘©æ“¦è½®é€Ÿåº¦å¯è°ƒèŠ‚ */
+            /* ÓÒ²¦¸Ë´òµ½ÖĞ¼ä£¬·ÉïÚ¼Ü½øÈëµ÷ÊÔÄ£??,¸ÃÄ£Ê½ÏÂÄ¦²ÁÂÖËÙ¶È¿Éµ÷?? */
         case RC_SW_MID:
-            if (dart_rack.state == DART_RACK_TEST) { // ä¸è¦é‡å¤è®¾å‚æ•°
+            if (dart_rack.state == DART_RACK_TEST) { // ²»ÒªÖØ¸´Éè²Î??
                 return;
             }
             dart_rack_reset_flag = 0;
             servo_start();
+            lazer_on(); // ¿ªÆô¼¤??
             dart_rack.state = DART_RACK_TEST;
             break;
-            /* å³æ‹¨æ†æ‰“åˆ°æœ€ä¸‹ï¼Œæˆ–é¥æ§å™¨æ•°æ®å‡ºé”™ï¼Œé£é•–æ¶è¿›å…¥æ— åŠ›æ¨¡å¼ */
+            /* ÓÒ²¦¸Ë´òµ½×îÏÂ£¬»òÒ£¿ØÆ÷Êı¾İ³ö´í£¬·ÉïÚ¼Ü½øÈëÎŞÁ¦Ä£Ê½ */
         case RC_SW_DOWN:
+            lazer_off(); // ¹Ø±Õ¼¤??
             dart_rack.state = DART_RACK_NO_FORCE;
             break;
         default:
+            lazer_off(); // ¹Ø±Õ¼¤??
             dart_rack.state = DART_RACK_NO_FORCE;
             break;
     }
 
-    drsthis = dart_rack.state; // è®°å½•ä¹‹åçŠ¶æ€
+    drsthis = dart_rack.state; // ¼ÇÂ¼Ö®ºó×´??
 }
 
 /**
- * @brief å‡½æ•°â€œmotor_measure_updateâ€æ›´æ–°é£é•–æ¶ä¸­äº‘å°å’Œå°„å‡»ç”µæœºçš„æµ‹é‡å€¼ã€‚
+ * @brief º¯Êı¡°motor_measure_update¡±¸üĞÂ·ÉïÚ¼ÜÖĞÔÆÌ¨ºÍÉä»÷µç»úµÄ²âÁ¿Öµ??
  */
 void motor_measure_update(void)
 {
@@ -330,7 +386,7 @@ void motor_measure_update(void)
 }
 
 /**
- * @brief å‡½æ•°â€œencoder_measure_updateâ€æ›´æ–°è§’åº¦ç¼–ç å™¨çš„æµ‹é‡å€¼ã€‚
+ * @brief º¯Êı¡°encoder_measure_update¡±¸üĞÂ½Ç¶È±àÂëÆ÷µÄ²âÁ¿Öµ??
  */
 void encoder_measure_update(void)
 {
@@ -338,7 +394,7 @@ void encoder_measure_update(void)
 }
 
 /**
- * @brief motor_target_update å‡½æ•°æ ¹æ®å…¶ä»–ç”µæœºçš„æµ‹é‡å€¼æ›´æ–°é£é•–æ¶ç³»ç»Ÿä¸­å„ä¸ªç”µæœºçš„ç›®æ ‡ä½ç½®ã€‚
+ * @brief motor_target_update º¯Êı¸ù¾İÆäËûµç»úµÄ²âÁ¿Öµ¸üĞÂ·ÉïÚ¼ÜÏµÍ³ÖĞ¸÷¸öµç»úµÄÄ¿±êÎ»ÖÃ??
  */
 void motor_target_update(void)
 {
@@ -350,384 +406,181 @@ void motor_target_update(void)
 }
 
 /**
- * @brief å‡½æ•°â€œmotor_algorithm_updateâ€æ ¹æ®ç³»ç»Ÿçš„å½“å‰çŠ¶æ€åˆå§‹åŒ–å¹¶æ›´æ–°å„ç§ç”µæœºç®—æ³•çš„ PID æ§åˆ¶å™¨ã€‚
+ * @brief º¯Êı¡°motor_algorithm_update¡±¸ù¾İÏµÍ³µÄµ±Ç°×´Ì¬³õÊ¼»¯²¢¸üĞÂ¸÷ÖÖµç»úËã·¨µÄ PID ¿ØÖÆÆ÷??
  *
- * @return è¯¥å‡½æ•°ä¸è¿”å›ä»»ä½•å€¼ã€‚
+ * @return ¸Ãº¯Êı²»·µ»ØÈÎºÎÖµ??
  */
 void motor_algorithm_update(void)
 {
-    /* é¿å…é‡å¤è®¾ç½®ç®—æ³• */
-    if (drsthis == drslast && remote.rc.s[1] == remote.rc.s_last[1]) {
+    /* ±ÜÃâÖØ¸´ÉèÖÃËã·¨ */
+    if (drsthis == drslast) {
         return;
     }
 
-    if (dart_rack.state == DART_RACK_INIT) {
-        cascade_PID_init(&dart_rack.pid.cascade_drag_left,
-                         DRAG_LEFT_POSITION_OPERATE,
-                         DRAG_LEFT_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_INCREASE,
-                         POSITION_ALPHA_INCREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         DRAG_LEFT_MAX_SPEED,
-                         DRAG_LEFT_MAX_ISPEED,
-                         DRAG_LEFT_MAX_OUTPUT,
-                         DRAG_LEFT_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_drag_right,
-                         DRAG_RIGHT_POSITION_OPERATE,
-                         DRAG_RIGHT_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_INCREASE,
-                         POSITION_ALPHA_INCREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         DRAG_RIGHT_MAX_SPEED,
-                         DRAG_RIGHT_MAX_ISPEED,
-                         DRAG_RIGHT_MAX_OUTPUT,
-                         DRAG_RIGHT_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_load,
-                         LOAD_POSITION_OPERATE,
-                         LOAD_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_DECREASE,
-                         POSITION_ALPHA_DECREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         LOAD_MAX_SPEED,
-                         LOAD_MAX_ISPEED,
-                         LOAD_MAX_OUTPUT,
-                         LOAD_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_adjust,
-                         ADJUST_POSITION_OPERATE,
-                         ADJUST_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_DECREASE,
-                         POSITION_ALPHA_DECREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         ADJUST_MAX_SPEED,
-                         ADJUST_MAX_ISPEED,
-                         ADJUST_MAX_OUTPUT,
-                         ADJUST_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.yaw,
-                         YAW_ANGLE_OPERATE,
-                         YAW_SPEED_OPERATE,
-                         ANGLE_INPUT_ALPHA,
-                         ANGLE_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         ANGLE_DELTA,
-                         ANGLE_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         YAW_MAX_ANGULAR_VELOCITY,
-                         YAW_MAX_ANGULAR_IVELOCITY,
-                         YAW_MAX_SPEED_OUTPUT,
-                         YAW_MAX_SPEED_IOUTPUT,
-                         ANGLE_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.pitch,
-                         PITCH_ANGLE_OPERATE,
-                         PITCH_SPEED_OPERATE,
-                         ANGLE_INPUT_ALPHA,
-                         ANGLE_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         ANGLE_DELTA,
-                         ANGLE_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         PITCH_MAX_ANGULAR_VELOCITY,
-                         PITCH_MAX_ANGULAR_IVELOCITY,
-                         PITCH_MAX_SPEED_OUTPUT,
-                         PITCH_MAX_SPEED_IOUTPUT,
-                         ANGLE_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-    }
+    PID_init(&dart_rack.pid.drag_left,
+             PID_POSITION,
+             DRAG_LEFT_OPERATE,
+             SPEED_INPUT_ALPHA,
+             SPEED_OUTPUT_ALPHA,
+             SPEED_DELTA,
+             SPEED_ALPHA,
+             DRAG_LEFT_MAX_OUTPUT,
+             DRAG_LEFT_MAX_IOUTPUT,
+             SPEED_DEAD_AREA);
+    PID_init(&dart_rack.pid.drag_right,
+             PID_POSITION,
+             DRAG_RIGHT_OPERATE,
+             SPEED_INPUT_ALPHA,
+             SPEED_OUTPUT_ALPHA,
+             SPEED_DELTA,
+             SPEED_ALPHA,
+             DRAG_RIGHT_MAX_OUTPUT,
+             DRAG_RIGHT_MAX_IOUTPUT,
+             SPEED_DEAD_AREA);
+    PID_init(&dart_rack.pid.load,
+             PID_POSITION,
+             LOAD_OPERATE,
+             SPEED_INPUT_ALPHA,
+             SPEED_OUTPUT_ALPHA,
+             SPEED_DELTA,
+             SPEED_ALPHA,
+             LOAD_MAX_OUTPUT,
+             LOAD_MAX_IOUTPUT,
+             SPEED_DEAD_AREA);
+    PID_init(&dart_rack.pid.adjust,
+             PID_POSITION,
+             ADJUST_OPERATE,
+             SPEED_INPUT_ALPHA,
+             SPEED_OUTPUT_ALPHA,
+             SPEED_DELTA,
+             SPEED_ALPHA,
+             ADJUST_MAX_OUTPUT,
+             ADJUST_MAX_IOUTPUT,
+             SPEED_DEAD_AREA);
 
-    if (dart_rack.state == DART_RACK_MATCH) {
-        cascade_PID_init(&dart_rack.pid.cascade_drag_left,
-                         DRAG_LEFT_POSITION_OPERATE,
-                         DRAG_LEFT_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_INCREASE,
-                         POSITION_ALPHA_INCREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         DRAG_LEFT_MAX_SPEED,
-                         DRAG_LEFT_MAX_ISPEED,
-                         DRAG_LEFT_MAX_OUTPUT,
-                         DRAG_LEFT_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_drag_right,
-                         DRAG_RIGHT_POSITION_OPERATE,
-                         DRAG_RIGHT_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_INCREASE,
-                         POSITION_ALPHA_INCREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         DRAG_RIGHT_MAX_SPEED,
-                         DRAG_RIGHT_MAX_ISPEED,
-                         DRAG_RIGHT_MAX_OUTPUT,
-                         DRAG_RIGHT_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_load,
-                         LOAD_POSITION_OPERATE,
-                         LOAD_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_DECREASE,
-                         POSITION_ALPHA_DECREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         LOAD_MAX_SPEED,
-                         LOAD_MAX_ISPEED,
-                         LOAD_MAX_OUTPUT,
-                         LOAD_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.cascade_adjust,
-                         ADJUST_POSITION_OPERATE,
-                         ADJUST_SPEED_OPERATE,
-                         POSITION_INPUT_ALPHA,
-                         POSITION_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         POSITION_DELTA_DECREASE,
-                         POSITION_ALPHA_DECREASE,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         ADJUST_MAX_SPEED,
-                         ADJUST_MAX_ISPEED,
-                         ADJUST_MAX_OUTPUT,
-                         ADJUST_MAX_IOUTPUT,
-                         POSITION_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.yaw,
-                         YAW_ANGLE_OPERATE,
-                         YAW_SPEED_OPERATE,
-                         ANGLE_INPUT_ALPHA,
-                         ANGLE_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         ANGLE_DELTA,
-                         ANGLE_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         YAW_MAX_ANGULAR_VELOCITY,
-                         YAW_MAX_ANGULAR_IVELOCITY,
-                         YAW_MAX_SPEED_OUTPUT,
-                         YAW_MAX_SPEED_IOUTPUT,
-                         ANGLE_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-        cascade_PID_init(&dart_rack.pid.pitch,
-                         PITCH_ANGLE_OPERATE,
-                         PITCH_SPEED_OPERATE,
-                         ANGLE_INPUT_ALPHA,
-                         ANGLE_OUTPUT_ALPHA,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         ANGLE_DELTA,
-                         ANGLE_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         PITCH_MAX_ANGULAR_VELOCITY,
-                         PITCH_MAX_ANGULAR_IVELOCITY,
-                         PITCH_MAX_SPEED_OUTPUT,
-                         PITCH_MAX_SPEED_IOUTPUT,
-                         ANGLE_DEAD_AREA,
-                         SPEED_DEAD_AREA);
-    }
-    if (dart_rack.state == DART_RACK_TEST) {
-        switch (remote.rc.s[1]) {
-            case GIMBAL_CONTROL:
-                cascade_PID_init(&dart_rack.pid.yaw,
-                                 YAW_ANGLE_OPERATE,
-                                 YAW_SPEED_OPERATE,
-                                 ANGLE_INPUT_ALPHA,
-                                 ANGLE_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 ANGLE_DELTA,
-                                 ANGLE_ALPHA,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 YAW_MAX_ANGULAR_VELOCITY,
-                                 YAW_MAX_ANGULAR_IVELOCITY,
-                                 YAW_MAX_SPEED_OUTPUT,
-                                 YAW_MAX_SPEED_IOUTPUT,
-                                 ANGLE_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                cascade_PID_init(&dart_rack.pid.pitch,
-                                 PITCH_ANGLE_OPERATE,
-                                 PITCH_SPEED_OPERATE,
-                                 ANGLE_INPUT_ALPHA,
-                                 ANGLE_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 ANGLE_DELTA,
-                                 ANGLE_ALPHA,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 1000,
-                                 1000,
-                                 500,
-                                 500,
-                                 ANGLE_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                break;
-            case SHOOT_SPEED_CONTROL:
-                PID_init(&dart_rack.pid.drag_left,
-                         PID_POSITION,
-                         DRAG_LEFT_OPERATE,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         8000.0f,
-                         4000.0f,
-                         ZERO_POINT);
-                PID_init(&dart_rack.pid.drag_right,
-                         PID_POSITION,
-                         DRAG_RIGHT_OPERATE,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         8000.0f,
-                         4000.0f,
-                         ZERO_POINT);
-                PID_init(&dart_rack.pid.load,
-                         PID_POSITION,
-                         DRAG_LEFT_OPERATE,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         5000.0f,
-                         2000.0f,
-                         ZERO_POINT);
-                PID_init(&dart_rack.pid.adjust,
-                         PID_POSITION,
-                         DRAG_LEFT_OPERATE,
-                         SPEED_INPUT_ALPHA,
-                         SPEED_OUTPUT_ALPHA,
-                         SPEED_DELTA,
-                         SPEED_ALPHA,
-                         8000.0f,
-                         4000.0f,
-                         ZERO_POINT);
-                break;
-            case SHOOT_POSITION_CONTROL:
-                cascade_PID_init(&dart_rack.pid.cascade_drag_left,
-                                 DRAG_LEFT_POSITION_OPERATE,
-                                 DRAG_LEFT_SPEED_OPERATE,
-                                 POSITION_INPUT_ALPHA,
-                                 POSITION_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 POSITION_DELTA_DECREASE,
-                                 POSITION_ALPHA_DECREASE,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 DRAG_LEFT_MAX_SPEED,
-                                 DRAG_LEFT_MAX_ISPEED,
-                                 DRAG_LEFT_MAX_OUTPUT,
-                                 DRAG_LEFT_MAX_IOUTPUT,
-                                 POSITION_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                cascade_PID_init(&dart_rack.pid.cascade_drag_right,
-                                 DRAG_RIGHT_POSITION_OPERATE,
-                                 DRAG_RIGHT_SPEED_OPERATE,
-                                 POSITION_INPUT_ALPHA,
-                                 POSITION_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 POSITION_DELTA_DECREASE,
-                                 POSITION_ALPHA_DECREASE,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 DRAG_RIGHT_MAX_SPEED,
-                                 DRAG_RIGHT_MAX_ISPEED,
-                                 DRAG_RIGHT_MAX_OUTPUT,
-                                 DRAG_RIGHT_MAX_IOUTPUT,
-                                 POSITION_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                cascade_PID_init(&dart_rack.pid.cascade_load,
-                                 LOAD_POSITION_OPERATE,
-                                 LOAD_SPEED_OPERATE,
-                                 POSITION_INPUT_ALPHA,
-                                 POSITION_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 POSITION_DELTA_DECREASE,
-                                 POSITION_ALPHA_DECREASE,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 LOAD_MAX_SPEED,
-                                 LOAD_MAX_ISPEED,
-                                 LOAD_MAX_OUTPUT,
-                                 LOAD_MAX_IOUTPUT,
-                                 POSITION_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                cascade_PID_init(&dart_rack.pid.cascade_adjust,
-                                 ADJUST_POSITION_OPERATE,
-                                 ADJUST_SPEED_OPERATE,
-                                 POSITION_INPUT_ALPHA,
-                                 POSITION_OUTPUT_ALPHA,
-                                 SPEED_INPUT_ALPHA,
-                                 SPEED_OUTPUT_ALPHA,
-                                 POSITION_DELTA_DECREASE,
-                                 POSITION_ALPHA_DECREASE,
-                                 SPEED_DELTA,
-                                 SPEED_ALPHA,
-                                 ADJUST_MAX_SPEED,
-                                 ADJUST_MAX_ISPEED,
-                                 ADJUST_MAX_OUTPUT,
-                                 ADJUST_MAX_IOUTPUT,
-                                 POSITION_DEAD_AREA,
-                                 SPEED_DEAD_AREA);
-                break;
-            default:
-                break;
-        }
-    }
+    cascade_PID_init(&dart_rack.pid.cascade_drag_left,
+                     DRAG_LEFT_POSITION_OPERATE,
+                     DRAG_LEFT_SPEED_OPERATE,
+                     POSITION_INPUT_ALPHA,
+                     POSITION_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     POSITION_DELTA_DECREASE,
+                     POSITION_ALPHA_DECREASE,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     DRAG_LEFT_MAX_SPEED,
+                     DRAG_LEFT_MAX_ISPEED,
+                     DRAG_LEFT_MAX_OUTPUT,
+                     DRAG_LEFT_MAX_IOUTPUT,
+                     DRAG_LEFT_POSITION_THRESHOLD,
+                     SPEED_DEAD_AREA);
+    cascade_PID_init(&dart_rack.pid.cascade_drag_right,
+                     DRAG_RIGHT_POSITION_OPERATE,
+                     DRAG_RIGHT_SPEED_OPERATE,
+                     POSITION_INPUT_ALPHA,
+                     POSITION_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     POSITION_DELTA_DECREASE,
+                     POSITION_ALPHA_DECREASE,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     DRAG_RIGHT_MAX_SPEED,
+                     DRAG_RIGHT_MAX_ISPEED,
+                     DRAG_RIGHT_MAX_OUTPUT,
+                     DRAG_RIGHT_MAX_IOUTPUT,
+                     DRAG_RIGHT_POSITION_THRESHOLD,
+                     SPEED_DEAD_AREA);
+    cascade_PID_init(&dart_rack.pid.cascade_load,
+                     LOAD_POSITION_OPERATE,
+                     LOAD_SPEED_OPERATE,
+                     POSITION_INPUT_ALPHA,
+                     POSITION_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     POSITION_DELTA_DECREASE,
+                     POSITION_ALPHA_DECREASE,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     LOAD_MAX_SPEED,
+                     LOAD_MAX_ISPEED,
+                     LOAD_MAX_OUTPUT,
+                     LOAD_MAX_IOUTPUT,
+                     LOAD_POSITION_THRESHOLD,
+                     SPEED_DEAD_AREA);
+    cascade_PID_init(&dart_rack.pid.cascade_adjust,
+                     ADJUST_POSITION_OPERATE,
+                     ADJUST_SPEED_OPERATE,
+                     POSITION_INPUT_ALPHA,
+                     POSITION_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     POSITION_DELTA_DECREASE,
+                     POSITION_ALPHA_DECREASE,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     ADJUST_MAX_SPEED,
+                     ADJUST_MAX_ISPEED,
+                     ADJUST_MAX_OUTPUT,
+                     ADJUST_MAX_IOUTPUT,
+                     ADJUST_POSITION_THRESHOLD,
+                     SPEED_DEAD_AREA);
+    cascade_PID_init(&dart_rack.pid.yaw,
+                     YAW_ANGLE_OPERATE,
+                     YAW_SPEED_OPERATE,
+                     ANGLE_INPUT_ALPHA,
+                     ANGLE_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     ANGLE_DELTA,
+                     ANGLE_ALPHA,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     YAW_MAX_ANGULAR_VELOCITY,
+                     YAW_MAX_ANGULAR_IVELOCITY,
+                     YAW_MAX_SPEED_OUTPUT,
+                     YAW_MAX_SPEED_IOUTPUT,
+                     ANGLE_DEAD_AREA,
+                     SPEED_DEAD_AREA);
+    // cascade_PID_init(&dart_rack.pid.pitch,
+    //                  PITCH_ANGLE_OPERATE,
+    //                  PITCH_SPEED_OPERATE,
+    //                  ANGLE_INPUT_ALPHA,
+    //                  ANGLE_OUTPUT_ALPHA,
+    //                  SPEED_INPUT_ALPHA,
+    //                  SPEED_OUTPUT_ALPHA,
+    //                  ANGLE_DELTA,
+    //                  ANGLE_ALPHA,
+    //                  SPEED_DELTA,
+    //                  SPEED_ALPHA,
+    //                  PITCH_MAX_ANGULAR_VELOCITY,
+    //                  PITCH_MAX_ANGULAR_IVELOCITY,
+    //                  PITCH_MAX_SPEED_OUTPUT,
+    //                  PITCH_MAX_SPEED_IOUTPUT,
+    //                  ANGLE_DEAD_AREA,
+    //                  SPEED_DEAD_AREA);
+    cascade_PID_init(&dart_rack.pid.pitch,
+                     PITCH_ANGLE_OPERATE,
+                     PITCH_SPEED_OPERATE,
+                     ANGLE_INPUT_ALPHA,
+                     ANGLE_OUTPUT_ALPHA,
+                     SPEED_INPUT_ALPHA,
+                     SPEED_OUTPUT_ALPHA,
+                     ANGLE_DELTA,
+                     ANGLE_ALPHA,
+                     SPEED_DELTA,
+                     SPEED_ALPHA,
+                     PITCH_MAX_SPEED,
+                     PITCH_MAX_ISPEED,
+                     PITCH_MAX_OUTPUT,
+                     PITCH_MAX_IOUTPUT,
+                     PITCH_POSITION_THRESHOLD,
+                     SPEED_DEAD_AREA);
 }
 
 /**
- * @brief å‡½æ•°â€œgimbal_command_updateâ€æ ¹æ®ä¸åŒçš„çŠ¶æ€å’Œæ§åˆ¶è¾“å…¥æ›´æ–°é£é•–æ¶ç³»ç»Ÿçš„åèˆªè§’å’Œä¿¯ä»°è§’çš„å‘½ä»¤å’Œè¾“å‡ºã€‚
+ * @brief º¯Êı¡°gimbal_command_update¡±¸ù¾İ²»Í¬µÄ×´Ì¬ºÍ¿ØÖÆÊäÈë¸üĞÂ·ÉïÚ¼ÜÏµÍ³µÄÆ«º½½ÇºÍ¸©Ñö½ÇµÄÃüÁîºÍÊä³ö??
  */
 void gimbal_command_update(void)
 {
@@ -740,7 +593,7 @@ void gimbal_command_update(void)
                                                  CIRCLE_ANGLE,
                                                  ZERO_POINT);
 
-        /* pitchè§’åº¦ç¼–ç å™¨åé¦ˆæ§åˆ¶ */
+        /* pitch½Ç¶È±àÂëÆ÷·´À¡¿Ø?? */
         // dart_rack.command.pitch = PITCH_TARGET_ANGLE;
         // dart_rack.output.pitch  = cascade_PID_calc(&dart_rack.pid.pitch,
         //                                            dart_rack.encoder.pitch_angle_encoder.angle,
@@ -748,7 +601,7 @@ void gimbal_command_update(void)
         //                                            dart_rack.command.pitch,
         //                                            CIRCLE_ANGLE,
         //                                            ZERO_POINT);
-        /* pitchç”µæœºåé¦ˆ+è¯»å¡æ§åˆ¶*/
+        /* pitchµç»ú·´À¡+¶Á¿¨¿ØÖÆ*/
         dart_rack.command.pitch = PITCH_TARGET_DIST;
         dart_rack.output.pitch  = cascade_PID_calc(&dart_rack.pid.pitch,
                                                    dart_rack.motor_measure.gimbal_motor_measure.pitch_dist,
@@ -759,7 +612,7 @@ void gimbal_command_update(void)
     }
 
     if (dart_rack.state == DART_RACK_MATCH) {
-        /* ç²—è°ƒè§’åº¦ */
+        /* ´Öµ÷½Ç¶È */
         dart_rack_cmd_flag   = referee.dart_rack_client_cmd.dart_cmd_flag;
         dart_rack_client_cmd = referee.dart_rack_client_cmd.dart_attack_target;
         if (dart_rack_aim_shoot != DART_RACK_AIM_TOWER &&
@@ -774,26 +627,28 @@ void gimbal_command_update(void)
             dart_rack.target.yaw = YAW_BASE_ANGLE;
             dart_rack_aim_shoot  = DART_RACK_AIM_BASE;
         }
-        /* ç»†è°ƒè§’åº¦ */
-        if (!is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
-            yaw_cmd_temp = GIMBAL_CMD_YAW_SLIGHT_KEYMAP;
+        /* Ï¸µ÷½Ç¶È */
+        temp_cmd = GIMBAL_CMD_YAW_SLIGHT_KEYMAP;
+        if (!is_zero(temp_cmd)) {
+            temp_yaw_cmd = temp_cmd;
         }
-        if (!is_zero(yaw_cmd_temp) && is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
-            dart_rack.target.yaw += yaw_cmd_temp;
-            yaw_cmd_temp = ZERO_POINT;
+        if (!is_zero(temp_yaw_cmd) && is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
+            dart_rack.target.yaw += temp_yaw_cmd;
+            temp_yaw_cmd = ZERO_POINT;
         }
         constrain(dart_rack.target.yaw, YAW_MIN_ANGLE, YAW_MAX_ANGLE);
-        /* è§’åº¦ä¿æŠ¤ */
+        /* ½Ç¶È±£»¤ */
         if (fabsf(dart_rack.target.yaw) < YAW_JUDGE_ANGLE) {
             dart_rack.target.yaw = YAW_TOWER_ANGLE;
         }
-        dart_rack.output.yaw = cascade_PID_calc(&dart_rack.pid.yaw,
-                                                dart_rack.encoder.yaw_angle_encoder.angle,
-                                                dart_rack.encoder.yaw_angle_encoder.angular_velocity,
-                                                dart_rack.target.yaw,
-                                                CIRCLE_ANGLE,
-                                                ZERO_POINT);
-        /* pitchè§’åº¦ç¼–ç å™¨åé¦ˆæ§åˆ¶ */
+        dart_rack.output.yaw = YAW_MOTOR_DIRECTION * cascade_PID_calc(&dart_rack.pid.yaw,
+                                                                      dart_rack.encoder.yaw_angle_encoder.angle,
+                                                                      dart_rack.encoder.yaw_angle_encoder.angular_velocity,
+                                                                      dart_rack.target.yaw,
+                                                                      CIRCLE_ANGLE,
+                                                                      ZERO_POINT);
+
+        /* pitch½Ç¶È±àÂëÆ÷·´À¡¿Ø?? */
         // dart_rack.target.pitch = PITCH_TARGET_ANGLE;
         // dart_rack.output.pitch  = cascade_PID_calc(&dart_rack.pid.pitch,
         //                                            dart_rack.encoder.pitch_angle_encoder.angle,
@@ -801,7 +656,7 @@ void gimbal_command_update(void)
         //                                            dart_rack.target.pitch,
         //                                            CIRCLE_ANGLE,
         //                                            ZERO_POINT);
-        /* pitchç”µæœºåé¦ˆ+è¯»å¡æ§åˆ¶*/
+        /* pitchµç»ú·´À¡+¶Á¿¨¿ØÖÆ*/
         dart_rack.target.pitch = PITCH_TARGET_DIST;
         dart_rack.output.pitch = cascade_PID_calc(&dart_rack.pid.pitch,
                                                   dart_rack.motor_measure.gimbal_motor_measure.pitch_dist,
@@ -811,36 +666,37 @@ void gimbal_command_update(void)
                                                   ZERO_POINT);
     }
     if (dart_rack.state == DART_RACK_TEST) {
-        /* è§’åº¦ç²—è°ƒ */
+        /* ½Ç¶È´Öµ÷ */
         switch (remote.rc.s[1]) {
             case GIMBAL_CONTROL:
-                if (handle_gimbal_left()) { // å‰å“¨ç«™
+                if (handle_gimbal_left()) { // Ç°ÉÚ??
                     dart_rack.target.yaw = YAW_TOWER_ANGLE;
                 }
-                if (handle_gimbal_right()) { // åŸºåœ°
+                if (handle_gimbal_right()) { // »ùµØ
                     dart_rack.target.yaw = YAW_BASE_ANGLE;
                 }
-                if (handle_gimbal_down()) { // å¤ä½
+                if (handle_gimbal_down()) { // ¸´Î»
                     dart_rack.target.yaw = YAW_ZERO_ANGLE;
                 }
-                /* è®¾ç½®é›¶ç‚¹ */
+                /* ÉèÖÃÁãµã */
                 if (fabsf(dart_rack.target.yaw) < YAW_JUDGE_ANGLE) dart_rack.target.yaw = YAW_ZERO_ANGLE;
-                /* è§’åº¦å¾®è°ƒ*/
-                if (!is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
-                    yaw_cmd_temp = GIMBAL_CMD_YAW_SLIGHT_KEYMAP;
+                /* ½Ç¶ÈÎ¢µ÷*/
+                temp_cmd = GIMBAL_CMD_YAW_SLIGHT_KEYMAP;
+                if (!is_zero(temp_cmd)) {
+                    temp_yaw_cmd = temp_cmd;
                 }
-                if (!is_zero(yaw_cmd_temp) && is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
-                    dart_rack.target.yaw += yaw_cmd_temp;
-                    yaw_cmd_temp = ZERO_POINT;
+                if (!is_zero(temp_yaw_cmd) && is_zero(GIMBAL_CMD_YAW_SLIGHT_KEYMAP)) {
+                    dart_rack.target.yaw += temp_yaw_cmd;
+                    temp_yaw_cmd = ZERO_POINT;
                 }
                 loop_constrain(dart_rack.target.yaw, ZERO_POINT, CIRCLE_ANGLE);
-                dart_rack.output.yaw = cascade_PID_calc(&dart_rack.pid.yaw,
-                                                        dart_rack.encoder.yaw_angle_encoder.angle,
-                                                        dart_rack.encoder.yaw_angle_encoder.angular_velocity,
-                                                        dart_rack.target.yaw,
-                                                        CIRCLE_ANGLE,
-                                                        ZERO_POINT);
-                /* pitchç¼–ç å™¨åé¦ˆæ§åˆ¶ */
+                dart_rack.output.yaw = YAW_MOTOR_DIRECTION * cascade_PID_calc(&dart_rack.pid.yaw,
+                                                                              dart_rack.encoder.yaw_angle_encoder.angle,
+                                                                              dart_rack.encoder.yaw_angle_encoder.angular_velocity,
+                                                                              dart_rack.target.yaw,
+                                                                              CIRCLE_ANGLE,
+                                                                              ZERO_POINT);
+                /* pitch±àÂëÆ÷·´À¡¿Ø?? */
                 // if (fabsf(dart_rack.target.pitch) < 10.0f) dart_rack.target.pitch = PITCH_TARGET_ANGLE;
                 // dart_rack.target.pitch += GIMBAL_CMD_TEST_PITCH_KEYMAP;
                 // constrain(dart_rack.target.pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
@@ -850,16 +706,16 @@ void gimbal_command_update(void)
                 //                                           dart_rack.target.pitch,
                 //                                           CIRCLE_ANGLE,
                 //                                           ZERO_POINT);
-                /* pitchç”µæœº+è¯»å¡æ§åˆ¶*/
-                /* è®¾ç½®é›¶ç‚¹ */
-                if (fabsf(dart_rack.target.pitch) < 90.0f) dart_rack.target.pitch = PITCH_TARGET_DIST;
-                /* è§’åº¦å¾®è°ƒ*/
+                /* pitchµç»ú+¶Á¿¨¿ØÖÆ*/
+                /* ÉèÖÃÁãµã */
+                if (fabsf(dart_rack.target.pitch) > PITCH_JUDGE_DIST) dart_rack.target.pitch = PITCH_TARGET_DIST;
+                /* ½Ç¶ÈÎ¢µ÷*/
                 if (!is_zero(GIMBAL_CMD_PITCH_SLIGHT_KEYMAP)) {
-                    pitch_cmd_temp = GIMBAL_CMD_PITCH_SLIGHT_KEYMAP;
+                    temp_pitch_cmd = GIMBAL_CMD_PITCH_SLIGHT_KEYMAP;
                 }
-                if (!is_zero(pitch_cmd_temp) && is_zero(GIMBAL_CMD_PITCH_SLIGHT_KEYMAP)) {
-                    dart_rack.target.pitch += pitch_cmd_temp;
-                    pitch_cmd_temp = ZERO_POINT;
+                if (!is_zero(temp_pitch_cmd) && is_zero(GIMBAL_CMD_PITCH_SLIGHT_KEYMAP)) {
+                    dart_rack.target.pitch += temp_pitch_cmd;
+                    temp_pitch_cmd = ZERO_POINT;
                 }
                 constrain(dart_rack.target.pitch, PITCH_MIN_DIST, PITCH_MAX_DIST);
                 dart_rack.output.pitch = cascade_PID_calc(&dart_rack.pid.pitch,
@@ -868,7 +724,7 @@ void gimbal_command_update(void)
                                                           dart_rack.target.pitch,
                                                           ZERO_POINT,
                                                           ZERO_POINT);
-                /* è®°å½•ç»“æœ */
+                /* ¼ÇÂ¼½á¹û */
                 // if (handle_gimbal_up()) {
                 //     if (in_range(dart_rack.target.yaw, YAW_TOWER_MIN_ANGLE, YAW_TOWER_MAX_ANGLE)) {
                 //         YAW_TOWER_ANGLE = dart_rack.target.yaw;
@@ -893,146 +749,249 @@ void gimbal_command_update(void)
 }
 
 /**
- * @brief å‡½æ•°â€œshoot_command_updateâ€æ›´æ–°å‘½ä»¤å¹¶æ§åˆ¶é£é•–æ¶ç³»ç»Ÿçš„å‘å°„ç”µæœºå’Œä¼ºæœç³»ç»Ÿã€‚
+ * @brief º¯Êı¡°shoot_command_update¡±¸üĞÂÃüÁî²¢¿ØÖÆ·ÉïÚ¼ÜÏµÍ³µÄ·¢Éäµç»úºÍËÅ·şÏµÍ³??
  */
 void shoot_command_update(void)
 {
     if (dart_rack.state == DART_RACK_MATCH) {
-        /* ------------------------------- è¡Œç¨‹è°ƒèŠ‚ç”µæœºæå‰ç§»åŠ¨ ------------------------------- */
-        if (dart_rack_shoot_state == DART_RACK_SHOOT_READY ||
-            dart_rack_shoot_state == DART_RACK_SHOOT_ON_FIRE) {
-            if (motor_adjust_state == MOTOR_ADJUST_READY ||
-                (motor_adjust_state == MOTOR_ADJUST_TOWER && dart_rack_aim_shoot != DART_RACK_AIM_TOWER) ||
-                (motor_adjust_state == MOTOR_ADJUST_BASE && dart_rack_aim_shoot != DART_RACK_AIM_BASE)) {
-                switch (dart_rack_aim_shoot) {
-                    case DART_RACK_AIM_TOWER:
-                        motor_adjust_state      = MOTOR_ADJUST_BUSY;
-                        motor_adjust_count      = get_system_time();
-                        dart_rack.target.adjust = ADJUST_TOWER_POSITION;
-                        break;
-                    case DART_RACK_AIM_BASE:
-                        motor_adjust_state      = MOTOR_ADJUST_BUSY;
-                        motor_adjust_count      = get_system_time();
-                        dart_rack.target.adjust = ADJUST_BASE_POSITION;
-                        break;
-                    default:
-                        break;
-                }
+        /* -------------------------------- È«²¿·¢ÉäÍê±ÏÍË?? -------------------------------- */
+        if (dart_rack_num_count >= DART_RACK_NUM) {
+            return;
+        }
+        /* ------------------------------- ĞĞ³Ìµ÷½Úµç»úÌáÇ°ÒÆ¶¯ ------------------------------- */
+        if (motor_adjust_state == MOTOR_ADJUST_READY ||
+            (motor_adjust_state != MOTOR_ADJUST_TOWER && dart_rack_aim_shoot == DART_RACK_AIM_TOWER) ||
+            (motor_adjust_state == MOTOR_ADJUST_TOWER && dart_rack_aim_shoot == DART_RACK_AIM_TOWER && (!is_zero(dart_rack.target.adjust - adjust_tower_position))) ||
+            (motor_adjust_state != MOTOR_ADJUST_BASE && dart_rack_aim_shoot == DART_RACK_AIM_BASE) ||
+            (motor_adjust_state == MOTOR_ADJUST_BASE && dart_rack_aim_shoot == DART_RACK_AIM_BASE && (!is_zero(dart_rack.target.adjust - adjust_base_position)))) {
+            switch (dart_rack_aim_shoot) {
+                case DART_RACK_AIM_TOWER:
+                    motor_adjust_state      = MOTOR_ADJUST_BUSY;
+                    motor_adjust_count      = get_system_time();
+                    dart_rack.target.adjust = adjust_tower_position;
+                    motor_adjust_max_time   = dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.adjust_dist - dart_rack.target.adjust,
+                                                                MOTOR_ADJUST_TIME_MEASURE);
+                    break;
+                case DART_RACK_AIM_BASE:
+                    motor_adjust_state      = MOTOR_ADJUST_BUSY;
+                    motor_adjust_count      = get_system_time();
+                    dart_rack.target.adjust = adjust_base_position;
+                    motor_adjust_max_time   = dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.adjust_dist - dart_rack.target.adjust,
+                                                                MOTOR_ADJUST_TIME_MEASURE);
+                    break;
+                default:
+                    break;
             }
         }
         if (motor_adjust_state == MOTOR_ADJUST_BUSY) {
             if (get_close(dart_rack.motor_measure.shoot_motor_measure.adjust_dist, dart_rack.target.adjust, ADJUST_POSITION_THRESHOLD) ||
-                get_system_time() - motor_adjust_count > MOTOR_ADJUST_MAX_TIME) {
+                // get_system_time() - motor_adjust_count > MOTOR_ADJUST_MAX_TIME) {
+                /* ¶¯Ì¬×î´óÊ±?? */
+                get_system_time() - motor_adjust_count > motor_adjust_max_time) {
                 switch (dart_rack_aim_shoot) {
                     case DART_RACK_AIM_TOWER:
-                        motor_adjust_state    = MOTOR_ADJUST_TOWER;
-                        dart_rack_shoot_state = DART_RACK_SHOOT_ADJUST;
+                        motor_adjust_state = MOTOR_ADJUST_TOWER;
+                        if (dart_rack_shoot_state == DART_RACK_SHOOT_READY) { //? ·ÀÖ¹ÒÑ×°Ìî¸É??
+                            dart_rack_shoot_state = DART_RACK_SHOOT_ADJUST;
+                        }
                         break;
                     case DART_RACK_AIM_BASE:
-                        motor_adjust_state    = MOTOR_ADJUST_BASE;
-                        dart_rack_shoot_state = DART_RACK_SHOOT_ADJUST;
+                        motor_adjust_state = MOTOR_ADJUST_BASE;
+                        if (dart_rack_shoot_state == DART_RACK_SHOOT_READY) {
+                            dart_rack_shoot_state = DART_RACK_SHOOT_ADJUST;
+                        }
                         break;
                     default:
                         break;
                 }
             }
         }
-        // æŒ‰é”®æ£€æµ‹
+        // °´¼ü¼ì??
         if (dart_rack_shoot_state == DART_RACK_SHOOT_ADJUST && SHOOT_CMD_MATCH_LOAD_KEYMAP) {
             dart_rack_shoot_state = DART_RACK_SHOOT_LOAD;
         }
-        /* ---------------------------------- é£é•–æ¶è£…å¡« --------------------------------- */
+        /* ---------------------------------- ·ÉïÚ¼Ü×°?? --------------------------------- */
         if (dart_rack_shoot_state == DART_RACK_SHOOT_LOAD) {
-            // æ‹–æ‹½ç”µæœºç­‰å¾…
+            /* --------------------------------- step 1 --------------------------------- */
+            // ÍÏ×§µç»úµÈ´ı
             if (motor_drag_state == MOTOR_DRAG_READY) {
                 motor_drag_state            = MOTOR_DRAG_BUSY;
                 motor_drag_count            = get_system_time();
                 dart_rack.target.drag_left  = DRAG_LEFT_WAIT_POSITION;
                 dart_rack.target.drag_right = DRAG_RIGHT_WAIT_POSITION;
+                motor_drag_max_time         = get_max(dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist - dart_rack.target.drag_left,
+                                                                        MOTOR_DRAG_TIME_MEASURE),
+                                                      dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist - dart_rack.target.drag_right,
+                                                                        MOTOR_DRAG_TIME_MEASURE));
             }
             if (motor_drag_state == MOTOR_DRAG_BUSY) {
                 if ((get_close(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist, dart_rack.target.drag_left, DRAG_LEFT_POSITION_THRESHOLD) &&
                      get_close(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist, dart_rack.target.drag_right, DRAG_RIGHT_POSITION_THRESHOLD)) ||
-                    get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    // get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    get_system_time() - motor_drag_count > motor_drag_max_time) {
                     motor_drag_state = MOTOR_DRAG_WAIT;
                 }
             }
-            if (motor_drag_state == MOTOR_DRAG_WAIT) {
-                // è£…å¡«èˆµæœºä¸‹é™
+            // µ²°å¶æ»úÏÂ½µ
+            if (servo_block_state == SERVO_BLOCK_READY) {
+                servo_block_state = SERVO_BLOCK_DOWN;
+                servo_block_count = get_system_time();
+                servo_block_down();
+            }
+            if (servo_block_state == SERVO_BLOCK_DOWN) {
+                if (get_system_time() - servo_block_count > SERVO_BLOCK_MOVE_MAX_TIME) {
+                    servo_block_state = SERVO_BLOCK_WAIT;
+                    servo_block_count = get_system_time();
+                }
+            }
+            /* --------------------------------- step 2 --------------------------------- */
+            if (motor_drag_state == MOTOR_DRAG_WAIT &&
+                servo_block_state == SERVO_BLOCK_WAIT) {
+                // ×°Ìî¶æ»úÏÂ½µ
                 if (servo_load_state == SERVO_LOAD_READY) {
                     servo_load_state = SERVO_LOAD_DOWN;
                     servo_load_count = get_system_time();
                     servo_load_down();
                 }
-                // ç­‰å¾…é£é•–æ»‘è½
+                // µÈ´ı·ÉïÚ»¬Âä
                 if (servo_load_state == SERVO_LOAD_DOWN) {
                     if (get_system_time() - servo_load_count > SERVO_LOAD_MAX_TIME) {
                         servo_load_state = SERVO_LOAD_WAIT;
                         servo_load_count = get_system_time();
                     }
                 }
-                // è£…å¡«èˆµæœºä¸Šå‡ é£é•–æ¶å°±ä½
+                /* --------------------------------- step 3 --------------------------------- */
+                // ×°Ìî¶æ»úÉÏÉı µ²°å¶æ»úÉÏÉı ·ÉïÚ¼Ü¾Í??
                 if (servo_load_state == SERVO_LOAD_WAIT) {
                     if (get_system_time() - servo_load_count > DART_RACK_SLIP_MAX_TIME) {
                         dart_rack_shoot_state = DART_RACK_SHOOT_MOVE;
-                        servo_load_state      = SERVO_LOAD_UP;
-                        servo_load_count      = get_system_time();
+
+                        servo_load_state = SERVO_LOAD_UP;
+                        servo_load_count = get_system_time();
                         servo_load_up();
 
-                        motor_drag_state = MOTOR_DRAG_BUSY;
-                        servo_load_count = get_system_time();
-                        switch (dart_rack_aim_shoot) {
-                            case DART_RACK_AIM_TOWER:
-                                dart_rack.target.drag_left  = DRAG_LEFT_TOWER_POSITION;
-                                dart_rack.target.drag_right = DRAG_RIGHT_TOWER_POSITION;
-                                break;
-                            case DART_RACK_AIM_BASE:
-                                dart_rack.target.drag_left  = DRAG_LEFT_BASE_POSITION;
-                                dart_rack.target.drag_right = DRAG_RIGHT_BASE_POSITION;
-                                break;
-                            default:
-                                break;
-                        }
+                        // servo_block_state = SERVO_BLOCK_UP;
+                        // servo_block_count = get_system_time();
+                        // servo_block_up();
+                        servo_block_state = SERVO_BLOCK_MID;
+                        servo_block_count = get_system_time();
+                        servo_block_mid();
                     }
                 }
             }
         }
-        /* ---------------------------------- é£é•–æ¶å°±ä½ --------------------------------- */
+        /* ---------------------------------- ·ÉïÚ¼Ü¾Í?? --------------------------------- */
         if (dart_rack_shoot_state == DART_RACK_SHOOT_MOVE) {
-            // è£…å¡«èˆµæœºä¸Šå‡
+            /* -------------------------------- step 3.1 -------------------------------- */
+            // ×°Ìî¶æ»úÉÏÉı
             if (servo_load_state == SERVO_LOAD_UP) {
                 if (get_system_time() - servo_load_count > SERVO_LOAD_MAX_TIME) {
                     servo_load_state = SERVO_LOAD_READY;
                 }
             }
-            // è£…å¡«ç”µæœºç§»åŠ¨
-            if (servo_load_state == SERVO_LOAD_READY) {
+            /* -------------------------------- step 4.1 -------------------------------- */
+            // ×°Ìîµç»úÒÆ¶¯
+            //! ·´¸´½øÈëbug
+            if (servo_load_state == SERVO_LOAD_READY &&
+                motor_load_state == MOTOR_LOAD_READY) {
                 motor_load_state      = MOTOR_LOAD_BUSY;
                 motor_load_count      = get_system_time();
                 dart_rack.target.load = LOAD_POSITION[dart_rack_num_count];
+                motor_load_max_time   = dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.load_dist - dart_rack.target.load,
+                                                          MOTOR_LOAD_TIME_MEASURE);
             }
             if (motor_load_state == MOTOR_LOAD_BUSY) {
                 if (get_close(dart_rack.motor_measure.shoot_motor_measure.load_dist, dart_rack.target.load, LOAD_POSITION_THRESHOLD) ||
-                    get_system_time() - motor_load_count > MOTOR_LOAD_MAX_TIME) {
+                    // get_system_time() - motor_load_count > MOTOR_LOAD_MAX_TIME) {
+                    get_system_time() - motor_load_count > motor_load_max_time) {
+                    // motor_load_state = MOTOR_LOAD_READY;
+                    motor_load_state = MOTOR_LOAD_RETURN;
+                    dart_rack.target.load += LOAD_RETURN_DIST;
+                    constrain(dart_rack.target.load, LOAD_MIN_POSITION, LOAD_MAX_POSITION);
+                    motor_load_max_time = dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.load_dist - dart_rack.target.load,
+                                                            MOTOR_LOAD_TIME_MEASURE);
+                }
+            }
+            //? ×°Ìîµç»ú»ØÎ»
+            if (motor_load_state == MOTOR_LOAD_RETURN) {
+                if (get_close(dart_rack.motor_measure.shoot_motor_measure.load_dist, dart_rack.target.load, LOAD_POSITION_THRESHOLD) ||
+                    get_system_time() - motor_load_count > motor_load_max_time) {
                     motor_load_state = MOTOR_LOAD_READY;
                 }
             }
-
-            // æ‹–æ‹½ç”µæœºç§»åŠ¨
+            /* -------------------------------- step 3.2 -------------------------------- */
+            // µ²°å¶æ»úÉÏÉı
+            // if (servo_block_state == SERVO_BLOCK_UP) {
+            //     if (get_system_time() - servo_block_count > SERVO_BLOCK_MAX_TIME) {
+            //         servo_block_state = SERVO_BLOCK_READY;
+            //     }
+            // }
+            // µ²°å¶æ»úÒÆ¶¯??45¡ãĞ±½Ç
+            if (servo_block_state == SERVO_BLOCK_MID) {
+                if (get_system_time() - servo_block_count > SERVO_BLOCK_MOVE_MAX_TIME / 2) {
+                    servo_block_state = SERVO_BLOCK_WAIT;
+                    servo_block_count = get_system_time();
+                }
+            }
+            // µ²°å¶æ»úµÈ´ı
+            if (servo_block_state == SERVO_BLOCK_WAIT) {
+                if (get_system_time() - servo_block_count > SERVO_BLOCK_WAIT_MAX_TIME) {
+                    servo_block_state = SERVO_BLOCK_UP;
+                    servo_block_count = get_system_time();
+                    servo_block_up();
+                }
+            }
+            if (servo_block_state == SERVO_BLOCK_UP) {
+                if (get_system_time() - servo_block_count > SERVO_BLOCK_MOVE_MAX_TIME / 2) {
+                    servo_block_state = SERVO_BLOCK_READY;
+                }
+            }
+            /* -------------------------------- step 4.2 -------------------------------- */
+            // ÍÏ×§µç»úÏÂ½µ
+            //! Ä¿±êÖµ·´¸´Éè??
+            if (servo_block_state == SERVO_BLOCK_READY &&
+                motor_drag_state == MOTOR_DRAG_WAIT) {
+                motor_drag_state = MOTOR_DRAG_BUSY;
+                motor_drag_count = get_system_time();
+                switch (dart_rack_aim_shoot) {
+                    case DART_RACK_AIM_TOWER:
+                        dart_rack.target.drag_left  = DRAG_LEFT_TOWER_POSITION;
+                        dart_rack.target.drag_right = DRAG_RIGHT_TOWER_POSITION;
+                        break;
+                    case DART_RACK_AIM_BASE:
+                        dart_rack.target.drag_left  = DRAG_LEFT_BASE_POSITION;
+                        dart_rack.target.drag_right = DRAG_RIGHT_BASE_POSITION;
+                        break;
+                    default:
+                        break;
+                }
+                motor_drag_max_time = get_max(dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist - dart_rack.target.drag_left,
+                                                                MOTOR_DRAG_TIME_MEASURE),
+                                              dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist - dart_rack.target.drag_right,
+                                                                MOTOR_DRAG_TIME_MEASURE));
+            }
+            // ÍÏ×§µç»úÒÆ¶¯
             if (motor_drag_state == MOTOR_DRAG_BUSY) {
                 if ((get_close(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist, dart_rack.target.drag_left, DRAG_LEFT_POSITION_THRESHOLD) &&
                      get_close(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist, dart_rack.target.drag_right, DRAG_RIGHT_POSITION_THRESHOLD)) ||
-                    get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    // get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    get_system_time() - motor_drag_count > motor_drag_max_time) {
                     motor_drag_state            = MOTOR_DRAG_RETURN;
                     motor_drag_count            = get_system_time();
                     dart_rack.target.drag_left  = DRAG_LEFT_SAFE_POSITION;
                     dart_rack.target.drag_right = DRAG_RIGHT_SAFE_POSITION;
+                    motor_drag_max_time         = get_max(dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist - dart_rack.target.drag_left,
+                                                                            MOTOR_DRAG_TIME_MEASURE),
+                                                          dist_cal_max_time(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist - dart_rack.target.drag_right,
+                                                                            MOTOR_DRAG_TIME_MEASURE));
                 }
             }
+            /* -------------------------------- step 5.2 -------------------------------- */
             if (motor_drag_state == MOTOR_DRAG_RETURN) {
                 if ((get_close(dart_rack.motor_measure.shoot_motor_measure.drag_left_dist, dart_rack.target.drag_left, DRAG_LEFT_POSITION_THRESHOLD) &&
                      get_close(dart_rack.motor_measure.shoot_motor_measure.drag_right_dist, dart_rack.target.drag_right, DRAG_RIGHT_POSITION_THRESHOLD)) ||
-                    get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    // get_system_time() - motor_drag_count > MOTOR_DRAG_MAX_TIME) {
+                    get_system_time() - motor_drag_count > motor_drag_max_time) {
                     motor_drag_state = MOTOR_DRAG_READY;
                 }
             }
@@ -1043,7 +1002,7 @@ void shoot_command_update(void)
             }
         }
 
-        /* ---------------------------------- ç”µæœºæ§åˆ¶ ---------------------------------- */
+        /* ---------------------------------- µç»ú¿ØÖÆ ---------------------------------- */
         dart_rack.output.drag_left  = cascade_PID_calc(&dart_rack.pid.cascade_drag_left,
                                                        dart_rack.motor_measure.shoot_motor_measure.drag_left_dist,
                                                        dart_rack.motor_measure.shoot_motor_measure.drag_left_speed,
@@ -1068,12 +1027,50 @@ void shoot_command_update(void)
                                                        dart_rack.target.adjust,
                                                        ZERO_POINT,
                                                        ZERO_POINT);
-
-        /* ---------------------------------- å‘å°„é£é•– ---------------------------------- */
+        /* ---------------------------------- ¾àÀëÎ¢µ÷ ---------------------------------- */
+        temp_cmd = SHOOT_CMD_MATCH_ADJUST_KEYMAP;
         switch (remote.rc.s[1]) {
-            case SHOOT_HALF_CONTROL:
-                // å‘å°„é£é•–ä½†ä¸è£…å¡«
-                if (SHOOT_CMD_MATCH_LAUNCH_KEYMAP &&
+            case DIST_CONTROL_FIRST_LEVEL:
+                if (!is_zero(temp_cmd)) {
+                    temp_adjust_cmd = DIST_CONTROL_FIRST_LEVEL_SENSE * temp_cmd;
+                }
+                if (!is_zero(temp_adjust_cmd) && (!SHOOT_CMD_MATCH_ADJUST_KEYMAP)) {
+                    if (dart_rack_aim_shoot == DART_RACK_AIM_TOWER) {
+                        adjust_tower_position += temp_adjust_cmd;
+                        constrain(adjust_tower_position, ADJUST_MIN_POSITION, ADJUST_MAX_POSIITON);
+                    }
+                    if (dart_rack_aim_shoot == DART_RACK_AIM_BASE) {
+                        adjust_base_position += temp_adjust_cmd;
+                        constrain(adjust_base_position, ADJUST_MIN_POSITION, ADJUST_MAX_POSIITON);
+                    }
+                    temp_adjust_cmd = ZERO_POINT;
+                }
+                break;
+            case DIST_CONTROL_SECOND_LEVEL:
+                if (!is_zero(SHOOT_CMD_MATCH_ADJUST_KEYMAP)) {
+                    temp_adjust_cmd = DIST_CONTROL_SECOND_LEVEL_SENSE * SHOOT_CMD_MATCH_ADJUST_KEYMAP;
+                }
+                if (!is_zero(temp_adjust_cmd) && (!SHOOT_CMD_MATCH_ADJUST_KEYMAP)) {
+                    if (dart_rack_aim_shoot == DART_RACK_AIM_TOWER) {
+                        adjust_tower_position += temp_adjust_cmd;
+                        constrain(adjust_tower_position, ADJUST_MIN_POSITION, ADJUST_MAX_POSIITON);
+                    }
+                    if (dart_rack_aim_shoot == DART_RACK_AIM_BASE) {
+                        adjust_base_position += temp_adjust_cmd;
+                        constrain(adjust_base_position, ADJUST_MIN_POSITION, ADJUST_MAX_POSIITON);
+                    }
+                    temp_adjust_cmd = ZERO_POINT;
+                }
+                break;
+            default:
+                break;
+        }
+        /* ---------------------------------- ·¢Éä·ÉïÚ ---------------------------------- */
+        switch (remote.rc.s[1]) {
+            case SHOOT_FULL_CONTROL:
+                // ·¢Éä·ÉïÚ²¢×°Ìî²¢·¢Éä(µÚ¶ş·¢×Ô¶¯·¢??)
+                if ((SHOOT_CMD_MATCH_LAUNCH_KEYMAP ||
+                     dart_rack_num_count % 2 == 1) && // Ë«·¢Ä£Ê½
                     dart_rack_shoot_state == DART_RACK_SHOOT_ON_FIRE) {
                     dart_rack_shoot_state = DART_RACK_SHOOT_LAUNCH;
                     dart_rack_shoot_count = get_system_time();
@@ -1083,14 +1080,17 @@ void shoot_command_update(void)
                 if (dart_rack_shoot_state == DART_RACK_SHOOT_LAUNCH) {
                     if (get_system_time() - dart_rack_shoot_count > DART_RACK_SHOOT_MAX_TIME) {
                         servo_launch_up();
-                        // æ¢å¤åˆ°å‡†å¤‡çŠ¶æ€
-                        dart_rack_shoot_state = DART_RACK_SHOOT_READY;
+                        // Ö±½Óµ½×°Ìî×´??
+                        dart_rack_shoot_state = DART_RACK_SHOOT_LOAD;
+                        dart_rack_num_count++;
                     }
                 }
-            case SHOOT_FULL_CONTROL:
-                // å‘å°„é£é•–å¹¶è£…å¡«
+            case SHOOT_HALF_CONTROL:
+                // printf("state: %u %u %u\r\n", motor_load_state, motor_drag_state, dart_rack_shoot_state);
+                // ·¢Éä·ÉïÚµ«²»×°Ìî
                 if (SHOOT_CMD_MATCH_LAUNCH_KEYMAP &&
                     dart_rack_shoot_state == DART_RACK_SHOOT_ON_FIRE) {
+                    // printf("launch ready\r\n");
                     dart_rack_shoot_state = DART_RACK_SHOOT_LAUNCH;
                     dart_rack_shoot_count = get_system_time();
                     servo_launch_down();
@@ -1099,8 +1099,10 @@ void shoot_command_update(void)
                 if (dart_rack_shoot_state == DART_RACK_SHOOT_LAUNCH) {
                     if (get_system_time() - dart_rack_shoot_count > DART_RACK_SHOOT_MAX_TIME) {
                         servo_launch_up();
-                        // ç›´æ¥åˆ°è£…å¡«çŠ¶æ€
-                        dart_rack_shoot_state = DART_RACK_SHOOT_LOAD;
+                        // »Ö¸´µ½×¼±¸×´??
+                        // printf("launch done\r\n");
+                        dart_rack_shoot_state = DART_RACK_SHOOT_ADJUST;
+                        dart_rack_num_count++;
                     }
                 }
             default:
@@ -1129,6 +1131,16 @@ void shoot_command_update(void)
                     servo_launch_down();
                 }
 
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_UP) {
+                    servo_block_up();
+                }
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_MID) {
+                    servo_block_mid();
+                }
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_DOWN) {
+                    servo_block_down();
+                }
+
                 dart_rack.command.drag_left  = DRAG_LEFT_MOTOR_DIRECTION * MOTOR_DRAG_MAX_TEST_SPEED * SHOOT_CMD_TEST_DRAG_KEYMAP;
                 dart_rack.command.drag_right = DRAG_RIGHT_MOTOR_DIRECTION * MOTOR_DRAG_MAX_TEST_SPEED * SHOOT_CMD_TEST_DRAG_KEYMAP;
                 dart_rack.command.load       = LOAD_MOTOR_DIRECTION * MOTOR_DRAG_MAX_TEST_SPEED * SHOOT_CMD_TEST_LOAD_KEYMAP;
@@ -1152,7 +1164,7 @@ void shoot_command_update(void)
                                                        ZERO_POINT);
                 break;
             case SHOOT_POSITION_CONTROL:
-                /* ---------------------------------- èˆµæœºç§»åŠ¨ ---------------------------------- */
+                /* ---------------------------------- ¶æ»úÒÆ¶¯ ---------------------------------- */
                 if (SHOOT_CMD_TEST_SERVO_LOAD_KEYMAP == SERVO_UP) {
                     servo_load_up();
                 }
@@ -1167,11 +1179,21 @@ void shoot_command_update(void)
                     servo_launch_down();
                 }
 
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_UP) {
+                    servo_block_up();
+                }
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_MID) {
+                    servo_block_mid();
+                }
+                if (SHOOT_CMD_TEST_SERVO_BLOCK_KEYMAP == SERVO_DOWN) {
+                    servo_block_down();
+                }
+
                 dart_rack.target.drag_left += DRAG_LEFT_MOTOR_DIRECTION * REMOTE_CONTROL_SENSE * MOTOR_DRAG_MAX_TEST_DIST * SHOOT_CMD_TEST_DRAG_KEYMAP;
                 dart_rack.target.drag_right += DRAG_RIGHT_MOTOR_DIRECTION * REMOTE_CONTROL_SENSE * MOTOR_DRAG_MAX_TEST_DIST * SHOOT_CMD_TEST_DRAG_KEYMAP;
                 dart_rack.target.load += LOAD_MOTOR_DIRECTION * REMOTE_CONTROL_SENSE * MOTOR_DRAG_MAX_TEST_DIST * SHOOT_CMD_TEST_LOAD_KEYMAP;
                 dart_rack.target.adjust += ADJUST_MOTOR_DIRECTION * REMOTE_CONTROL_SENSE * REMOTE_CONTROL_SENSE * MOTOR_DRAG_MAX_TEST_DIST * SHOOT_CMD_TEST_ADJUST_KEYMAP;
-                /* ----------------------------------- å¤ä½ ----------------------------------- */
+                /* ----------------------------------- ¸´Î» ----------------------------------- */
                 if (SHOOT_CMD_RESET_KEYMAP) {
                     dart_rack_reset_flag = 1;
                 }
@@ -1221,9 +1243,22 @@ void shoot_command_update(void)
 }
 
 /**
- * @brief å‡½æ•°â€œget_targetâ€å°†â€œdart_rack.targetâ€ç»“æ„çš„å€¼å¤åˆ¶åˆ°â€œtargetâ€ç»“æ„ä¸­ã€‚
+ * ¸Ãº¯Êı¼ÆËã×ßÍê¸ø¶¨¾àÀëËùĞèµÄ×î³¤Ê±¼ä??
  *
- * @param target æŒ‡å‘ DartRackTarget_t ç»“æ„çš„æŒ‡é’ˆï¼Œè¯¥ç»“æ„å°†å¡«å……ç›®æ ‡å‚æ•°çš„å€¼ã€‚
+ * @param dist ²ÎÊı¡°dist¡±µÄÀàĞÍÎª¡°fp32¡±£¬´ú±í¡°¸¡??32Î»¡±¡£ËüÊÇ´ú±í¾àÀë²âÁ¿µÄ±äÁ¿??
+ * @param time_measure µ¥Î»¾àÀëµÄ³ÖĞøÊ±¼ä(ÒÔºÁÃëÎªµ¥Î»)??
+ *
+ * @return ¼ÆËã½á¹û£¬ÊÇÒ»?? int16_t Öµ??
+ */
+int16_t dist_cal_max_time(fp32 dist, int16_t time_measure)
+{
+    return roundf(fabs(dist) * time_measure);
+}
+
+/**
+ * @brief º¯Êı¡°get_target¡±½«¡°dart_rack.target¡±½á¹¹µÄÖµ¸´ÖÆµ½¡°target¡±½á¹¹ÖĞ??
+ *
+ * @param target Ö¸Ïò DartRackTarget_t ½á¹¹µÄÖ¸Õë£¬¸Ã½á¹¹½«Ìî³äÄ¿±ê²ÎÊıµÄÖµ??
  */
 void get_target(DartRackTarget_t *target)
 {
@@ -1236,9 +1271,19 @@ void get_target(DartRackTarget_t *target)
 }
 
 /**
- * @brief å‡½æ•°â€œget_encoder_angleâ€å°†è§’åº¦å€¼ä»â€œdart_rackâ€ç¼–ç å™¨å¤åˆ¶åˆ°â€œencoderâ€ç»“æ„ã€‚
+ * º¯Êı¡°motor_reset_target¡±ÖØÖÃ·ÉïÚ¼Ü×óÍÏ¶¯¡¢ÓÒÍÏ¶¯ºÍ¸ºÔØµÄÄ¿±êÖµ??
+ */
+void motor_reset_target(void)
+{
+    dart_rack.target.drag_left  = ZERO_POINT;
+    dart_rack.target.drag_right = ZERO_POINT;
+    dart_rack.target.load       = ZERO_POINT;
+}
+
+/**
+ * @brief º¯Êı¡°get_encoder_angle¡±½«½Ç¶ÈÖµ´Ó¡°dart_rack¡±±àÂëÆ÷¸´ÖÆµ½¡°encoder¡±½á¹¹??
  *
- * @param encoder æŒ‡å‘ DartRackEncoder_t ç±»å‹ç»“æ„çš„æŒ‡é’ˆã€‚
+ * @param encoder Ö¸Ïò DartRackEncoder_t ÀàĞÍ½á¹¹µÄÖ¸Õë??
  */
 void get_encoder_angle(DartRackEncoder_t *encoder)
 {
@@ -1247,11 +1292,22 @@ void get_encoder_angle(DartRackEncoder_t *encoder)
 }
 
 /**
- * @brief å‡½æ•°â€œget_stateâ€æ£€ç´¢ DartRack çŠ¶æ€æœºçš„å½“å‰çŠ¶æ€ã€‚
+ * @brief º¯Êı¡°get_state¡±¼ì?? DartRack ×´Ì¬»úµÄµ±Ç°×´Ì¬??
  *
- * @param state å‚æ•°â€œstateâ€æ˜¯æŒ‡å‘â€œDartRackStateMachine_eâ€ç±»å‹å˜é‡çš„æŒ‡é’ˆã€‚
+ * @param state ²ÎÊı¡°state¡±ÊÇÖ¸Ïò¡°DartRackStateMachine_e¡±ÀàĞÍ±äÁ¿µÄÖ¸Õë??
  */
 void get_state(DartRackStateMachine_e *state)
 {
     *state = dart_rack.state;
+}
+
+void dart_rack_match_state_reset(void)
+{
+    dart_rack_shoot_state = DART_RACK_SHOOT_READY;
+    motor_load_state      = MOTOR_LOAD_READY;
+    motor_drag_state      = MOTOR_DRAG_READY;
+    motor_adjust_state    = MOTOR_ADJUST_READY;
+    servo_load_state      = SERVO_LOAD_READY;
+    servo_launch_state    = SERVO_LAUNCH_READY;
+    servo_block_state     = SERVO_BLOCK_READY;
 }

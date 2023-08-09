@@ -1,5 +1,5 @@
 ; Remote NDIS template device setup file
-; Copyright © 2018-2019 Arm Limited (or its affiliates). All rights reserved.
+; Copyright  2018-2019 Arm Limited (or its affiliates). All rights reserved.
 ;
 ; This is the template for the INF installation script  for the RNDIS-over-USB
 ; host driver that leverages the newer NDIS 6.x miniport (rndismp6.sys) for

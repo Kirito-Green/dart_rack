@@ -130,7 +130,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(hx711_read, hx711_read_thread, osPriorityNormal, 0, 128);
   hx711_read_thread_handle = osThreadCreate(osThread(hx711_read), NULL);
   /* tfcard */
-  osThreadDef(tfcard_transmit, tfcard_transmit_thread, osPriorityRealtime, 0, 4096);
+  osThreadDef(tfcard_transmit, tfcard_transmit_thread, osPriorityNormal, 0, 4096);
   tfcard_transmit_thread_handle = osThreadCreate(osThread(tfcard_transmit), NULL);
   /* music */
   // osThreadDef(beep_music, beep_music_thread, osPriorityNormal, 0, 512);

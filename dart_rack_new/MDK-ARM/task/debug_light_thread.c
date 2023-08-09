@@ -77,12 +77,12 @@ void debug_light_show(void)
         LED_YAW_ANGLE_ENCODER_SET;
     }
     /* PITCH ANGLE ENCODER */
-    if (offline.pitch_angle_encoder == DEVICE_OFFLINE) {
-        flag_problem = 1;
-        LED_PITCH_ANGLE_ENCODER_RESET;
-    } else {
-        LED_PITCH_ANGLE_ENCODER_SET;
-    }
+    // if (offline.pitch_angle_encoder == DEVICE_OFFLINE) {
+    //     flag_problem = 1;
+    //     LED_PITCH_ANGLE_ENCODER_RESET;
+    // } else {
+    //     LED_PITCH_ANGLE_ENCODER_SET;
+    // }
     /* REMOTE */
     if (offline.remote == DEVICE_OFFLINE) {
         flag_problem = 1;

@@ -32,6 +32,7 @@
         while (val > max_val) val -= dis;     \
     }
 
+extern fp32 get_max(fp32 v1, fp32 v2);
 extern bool_t is_zero(fp32 val);
 extern int16_t sign(fp32 val);
 extern int16_t step_function(fp32 val, fp32 JudgePoint);

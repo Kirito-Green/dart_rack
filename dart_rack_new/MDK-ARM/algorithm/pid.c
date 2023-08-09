@@ -36,7 +36,7 @@
  * @param max_iout 参数“max_iout”表示PID控制器积分项的最大允许值。它限制积分项的累积，防止积分项变得太大而导致系统不稳定或超调。
  * @param dead_area dead_area 参数表示所需设定点周围的范围，其中误差被认为可以忽略不计，并且不采取任何控制操作。
  *
- * @return 什么都没有（无效）。
+ * @return 什么都没有(无效)。
  */
 void PID_init(pid_type_def *pid,
               uint8_t mode,
@@ -120,7 +120,7 @@ void cascade_PID_init(cascade_pid_t *c_pid,
  * @param set “设置”参数表示受控系统的期望设定点或目标值。这是系统试图达到或维持的价值。
  * @param val_range 参数“val_range”表示误差可以取的值的范围。在功能中用于选择设定值和参考值之间的最短路径。
  *
- * @return fp32（浮点 32 位）类型的值，表示 PID 控制器的输出。
+ * @return fp32(浮点 32 位)类型的值，表示 PID 控制器的输出。
  */
 fp32 PID_calc(pid_type_def *pid, fp32 ref, fp32 set, fp32 val_range)
 {

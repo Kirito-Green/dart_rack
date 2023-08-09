@@ -33,8 +33,8 @@ typedef struct
     fp32 Ki;
     fp32 Kd;
 
-    fp32 max_out;  //
-    fp32 max_iout; //
+    fp32 max_out;  // 最大输出
+    fp32 max_iout; // 最大积分输出
 
     fp32 last_set;
     fp32 set;
@@ -45,8 +45,8 @@ typedef struct
     fp32 Pout;
     fp32 Iout;
     fp32 Dout;
-    fp32 Dbuf[3];  //
-    fp32 error[3]; //
+    fp32 Dbuf[3];  // 微分
+    fp32 error[3]; // 误差
 
 } pid_type_def;
 
@@ -67,8 +67,8 @@ typedef struct
     /*  */
     fp32 r1;
     fp32 r2;
-    fp32 sampling_period; //
-    fp32 tracking_delta;  //
+    fp32 sampling_period; // 采样时间
+    fp32 tracking_delta;  // 跟踪增量
 
     /* */
     fp32 e1;
@@ -77,8 +77,8 @@ typedef struct
     fp32 k2;
 
     /*  */
-    fp32 w0; //
-    fp32 b;  //
+    fp32 w0; // 带宽
+    fp32 b;  // 扰动调整
     fp32 z1;
     fp32 z2;
     fp32 z3;
@@ -86,7 +86,7 @@ typedef struct
     fp32 observe_beta2;
     fp32 observe_beta3;
 
-    fp32 max_out; //
+    fp32 max_out; // 最大输出
 
     fp32 last_set;
     fp32 set;
@@ -101,8 +101,8 @@ typedef struct
     /*  */
     fp32 r1;
     fp32 r2;
-    fp32 sampling_period; //
-    fp32 tracking_delta;  //
+    fp32 sampling_period; // 采样时间
+    fp32 tracking_delta;  // 跟踪增量
 
     /*  */
     fp32 e1;
@@ -114,8 +114,8 @@ typedef struct
     fp32 out_delta;
 
     /*  */
-    fp32 w0; //
-    fp32 b;  //
+    fp32 w0; // 带宽
+    fp32 b;  // 扰动调整
     fp32 z1;
     fp32 z2;
     fp32 z3;
@@ -126,7 +126,7 @@ typedef struct
     fp32 observe_alpha1;
     fp32 observe_alpha2;
 
-    fp32 max_out; //
+    fp32 max_out; // 最大输出
 
     fp32 last_set;
     fp32 set;
